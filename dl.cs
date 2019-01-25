@@ -16,6 +16,7 @@ namespace dl
         static string url { get; set; }
         static string usernftp { get; set; }
         static string userpassftp { get; set; }
+        readonly List<string> programmingLangEx = new List<string>() { ".c", ".cc", ".class", ".clj", ".cpp", ".cs", ".cxx", ".el", ".go", ".h", ".java", ".lua", ".m", ".h", ".m4", ".php", ".pas", ".po", ".py", ".rb", ".rs", ".sh", ".sh", ".swift", ".vb", ".vcxproj", ".xcodeproj", ".xml", ".diff", ".patch" };
 
         public string Rename(string path)
         {
@@ -67,6 +68,37 @@ namespace dl
 
         }
 
+        public string giturl(string url)
+        {
+            string ext = "";
+            int extPos = 0; bool existExtension = false;
+            extPos = url.LastIndexOf(".") + 1;
+            existExtension = (url.LastIndexOf(".") > 0) ? true : false;
+
+            if (existExtension)
+            {
+                ext = "." + url.Substring(extPos, url.Length - extPos).ToString();
+            }
+
+            string urlFileName = url.Substring(url.LastIndexOf("/") + 1, url.Length - (url.LastIndexOf("/") + 1));
+
+            StringBuilder AddtoURL = new StringBuilder(url);
+
+            if (url.Contains("/blob/") && ext != "" && (programmingLangEx.Any(element => element.Contains(ext))))
+            {
+                url = AddtoURL.Replace("/blob/", "/").ToString();
+                url = AddtoURL.Replace("github", "raw.githubusercontent").ToString();
+                return url;
+            }
+            else if (url.Contains("/blob/") && ext == "")
+            {
+                url = AddtoURL.Replace("/blob/", "/").ToString();
+                url = AddtoURL.Replace("github", "raw.githubusercontent").ToString();
+                return url;
+            }
+            return null;
+        }
+
         public void DownloadFile()
         {
             string filePath = "";
@@ -77,6 +109,11 @@ namespace dl
                 Console.WriteLine("Enter a valid URL");
                 url = Console.ReadLine();
             }
+            if (url.Contains("github.com"))
+            {
+                url = giturl(url);
+            }
+
             int pos = url.LastIndexOf("/") + 1;
             filePath = url.Substring(pos, url.Length - pos).ToString();
             filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + filePath;
@@ -120,3 +157,4 @@ namespace dl
         }
     }
 }
+
