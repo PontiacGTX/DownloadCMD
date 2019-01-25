@@ -96,6 +96,11 @@ namespace dl
                 url = AddtoURL.Replace("github", "raw.githubusercontent").ToString();
                 return url;
             }
+            else if (!(url.Contains("/blob/") && ext == ""))
+            {
+                url += "/archive/master.zip";
+                return url;
+            }
             return null;
         }
 
@@ -157,4 +162,3 @@ namespace dl
         }
     }
 }
-
