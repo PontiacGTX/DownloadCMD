@@ -148,7 +148,7 @@ namespace dl
             string cont = "";
 
 
-            while (!cont.Contains(" no ") || !cont.Contains("no ") || !cont.Equals("n"))
+            while (!cont.Contains(" no ") || !cont.Contains("no ") || !cont.Equals("no"))
             {
                 Download.DownloadFile();
                 Console.WriteLine("Do you want to download another file?"); cont = Console.ReadLine();
