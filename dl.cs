@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,12 +16,14 @@ namespace dl
         static string url { get; set; }
         static string usernftp { get; set; }
         static string userpassftp { get; set; }
-        readonly List<string> programmingLangEx = new List<string>() { ".c", ".cc", ".class", ".clj", ".cpp", ".cs", ".cxx", ".el", ".go", ".h", ".java", ".lua", ".m", ".h", ".m4", ".php", ".pas", ".po", ".py", ".rb", ".rs", ".sh", ".sh", ".swift", ".vb", ".vcxproj", ".xcodeproj", ".xml", ".diff", ".patch" };
+        readonly List<string> programmingLangEx = new List<string>() { ".c", ".cc", ".class", ".clj", ".cpp", ".cs", ".cxx", ".el", ".go", ".h", ".java", ".lua", ".m", ".h", ".m4", ".php", ".pas", ".po", ".py", ".rb", ".rs", ".sh", ".sh", ".swift", ".vb", ".vcxproj", ".xcodeproj", ".xml", ".diff", ".patch",".exe" };
 
         public string Rename(string path)
         {
             string tmpname = Path.GetFileName(path);
-            string name = "(" + count.ToString() + ")" + tmpname;
+
+            string name ="(" + count.ToString() + ")" + tmpname;
+
             StringBuilder addNew = new StringBuilder(path);
             while (Path.GetFileName(path) == name)
             {
@@ -68,6 +70,22 @@ namespace dl
 
         }
 
+        private static int GetIndexUrl(string str, char c, int n)
+        {
+            int s = -1;
+
+            for (int i = 0; i < n; i++)
+            {
+                s = str.IndexOf(c, s + 1);
+
+                if (s == -1) break;
+            }
+
+            return s;
+        }
+
+
+
         public string giturl(string url)
         {
             string ext = "";
@@ -83,22 +101,33 @@ namespace dl
             string urlFileName = url.Substring(url.LastIndexOf("/") + 1, url.Length - (url.LastIndexOf("/") + 1));
 
             StringBuilder AddtoURL = new StringBuilder(url);
+            string masterDownload = "";
+            int masterDirIndex = 0;
+            Console.WriteLine("Download Master? ");
+            masterDownload = Console.ReadLine();
 
-            if (url.Contains("/blob/") && ext != "" && (programmingLangEx.Any(element => element.Contains(ext))))
+            masterDirIndex = GetIndexUrl(url,'/',5);
+
+            if (url.Contains("/blob/") && ext != "" && (programmingLangEx.Any(element => element.Contains(ext))) && masterDownload == "" && !(masterDownload.Equals("yes") || masterDownload.Equals("y") || masterDirIndex != -1))
             {
                 url = AddtoURL.Replace("/blob/", "/").ToString();
                 url = AddtoURL.Replace("github", "raw.githubusercontent").ToString();
                 return url;
             }
-            else if (url.Contains("/blob/") && ext == "")
+            else if (url.Contains("/blob/") && ext == "" && masterDownload == "" && !(masterDownload.Equals("yes") || masterDownload.Equals("y") || masterDirIndex != -1))
             {
                 url = AddtoURL.Replace("/blob/", "/").ToString();
                 url = AddtoURL.Replace("github", "raw.githubusercontent").ToString();
                 return url;
             }
-            else if (!(url.Contains("/blob/") && ext == ""))
+            else if (!(url.Contains("/blob/") && ext == "" && (masterDownload.Equals("yes") || masterDownload.Equals("y")) && masterDirIndex != -1))
             {
+                url = url.Substring(0, masterDirIndex);
                 url += "/archive/master.zip";
+                return url;
+            }
+            else if ((!url.Contains("/blob/")) && ext != "" && !(masterDownload.Equals("yes") || masterDownload.Equals("y") || masterDirIndex != -1))
+            {
                 return url;
             }
             return null;
@@ -106,22 +135,46 @@ namespace dl
 
         public void DownloadFile()
         {
+
             string filePath = "";
             Console.WriteLine("Enter a URL");
             url = Console.ReadLine();
-            while ((!url.Contains("https")) || (!url.Contains("http")))
+            int protocolWordlength = url.IndexOf(':');
+            string protocol = (protocolWordlength>0) ? url.Substring(0,protocolWordlength) : "" ;
+            //without http/https/ftp missing
+            while (!(protocol== "http" || protocol == "https" || protocol == "ftp" || protocol==""))
             {
                 Console.WriteLine("Enter a valid URL");
                 url = Console.ReadLine();
             }
+            
             if (url.Contains("github.com"))
             {
                 url = giturl(url);
             }
 
-            int pos = url.LastIndexOf("/") + 1;
-            filePath = url.Substring(pos, url.Length - pos).ToString();
-            filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + filePath;
+            int pos = 0;
+           
+            if (url.Contains("github"))
+            {
+                int minprojectIndex = GetIndexUrl(url, '/', 4);
+                int maxprojectIndex = GetIndexUrl(url, '/', 5);
+
+                maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
+
+                string projectName = "";
+                projectName = url.Substring(minprojectIndex + 1, maxprojectIndex).ToString();
+                pos = url.LastIndexOf("/") + 1;
+                filePath = url.Substring(pos, url.Length - pos).ToString();
+                filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-" + filePath;
+            }
+            else
+            {
+                pos = url.LastIndexOf("/") + 1;
+                filePath = url.Substring(pos, url.Length - pos).ToString();
+                filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + filePath;
+            }
+            
 
             if (File.Exists(filePath))
             {
