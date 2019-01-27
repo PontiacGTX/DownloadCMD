@@ -40,7 +40,10 @@ namespace dl
         }
 
         public void DownloadFTP(string path)
-        {
+        { 
+            
+       try
+          { 
             string localpath = "";
             string requirement = "";
             if (File.Exists(path))
@@ -69,6 +72,13 @@ namespace dl
             {
                 ftpStream.CopyTo(fileStream);
             }
+                
+          }
+          catch (WebException ftpException)
+          {
+                    string exception = ftpException.Response.GetResponseStream().ToString();
+                    Console.WriteLine(exception);
+          }
 
         }
 
@@ -185,15 +195,8 @@ namespace dl
 
             if (url.Contains("ftp"))
             {
-                try
-                {
+                    Console.WriteLine($"Downloading File");
                     DownloadFTP(filePath);
-                }
-                catch (WebException ex)
-                {
-                    string exception = ex.Response.GetResponseStream().ToString();
-                    Console.WriteLine(exception);
-                }
             }
             else
             {
