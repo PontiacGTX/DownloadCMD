@@ -15,6 +15,7 @@ namespace dl
 
         WebClient client = new WebClient();
         public int count = 0;
+        static string  masterDownload = "";
         static string url { get; set; }
         static string usernftp { get; set; }
         static string userpassftp { get; set; }
