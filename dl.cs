@@ -11,6 +11,8 @@ namespace dl
 {
     class Program
     {
+       // static NetworkUsage ProcInfo;
+
         WebClient client = new WebClient();
         public int count = 0;
         static string url { get; set; }
@@ -86,6 +88,9 @@ namespace dl
 
 
 
+
+
+
         public string giturl(string url)
         {
             string ext = "";
@@ -108,29 +113,26 @@ namespace dl
 
             masterDirIndex = GetIndexUrl(url,'/',5);
 
-            if (url.Contains("/blob/") && ext != "" && (programmingLangEx.Any(element => element.Contains(ext))) && masterDownload == "" && !(masterDownload.Equals("yes") || masterDownload.Equals("y") || masterDirIndex != -1))
+            if (url.Contains("/blob/") && ext != "" && (programmingLangEx.Any(element => element.Contains(ext))) && masterDownload != "y" && masterDownload != "yes" && masterDirIndex ==-1 )
             {
                 url = AddtoURL.Replace("/blob/", "/").ToString();
                 url = AddtoURL.Replace("github", "raw.githubusercontent").ToString();
                 return url;
             }
-            else if (url.Contains("/blob/") && ext == "" && masterDownload == "" && !(masterDownload.Equals("yes") || masterDownload.Equals("y") || masterDirIndex != -1))
+            else if (url.Contains("/blob/") && ext == "" && masterDownload != "y" && masterDownload != "yes" && masterDirIndex == -1)
             {
                 url = AddtoURL.Replace("/blob/", "/").ToString();
                 url = AddtoURL.Replace("github", "raw.githubusercontent").ToString();
                 return url;
             }
-            else if (!(url.Contains("/blob/") && ext == "" && (masterDownload.Equals("yes") || masterDownload.Equals("y")) && masterDirIndex != -1))
+            else if ((!url.Contains("/blob/") && ext == "" && (masterDownload.Equals("yes") || masterDownload.Equals("y")) && masterDirIndex != -1))
             {
                 url = url.Substring(0, masterDirIndex);
                 url += "/archive/master.zip";
                 return url;
             }
-            else if ((!url.Contains("/blob/")) && ext != "" && !(masterDownload.Equals("yes") || masterDownload.Equals("y") || masterDirIndex != -1))
-            {
-                return url;
-            }
-            return null;
+            
+            return url;
         }
 
         public void DownloadFile()
