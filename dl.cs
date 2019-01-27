@@ -11,7 +11,7 @@ namespace dl
 {
     class Program
     {
-       // static NetworkUsage ProcInfo;
+       
 
         WebClient client = new WebClient();
         public int count = 0;
