@@ -191,7 +191,7 @@ namespace dl
             else
             {
                 Console.WriteLine($"Downloading File");
-                client.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.33 Safari/537.36");
+                 client.Headers.Add("User-Agent", "Mozilla / 5.0(Windows NT 10.0; Win64; x64) AppleWebKit / 537.36(KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36");
                 client.DownloadFile(url, filePath);
             }
 
