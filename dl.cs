@@ -97,7 +97,7 @@ namespace dl
             return s;
         }
 
-public string giturl(string url)
+        public string giturl(string url)
         {
             string ext = "";
             int extPos = 0; bool existExtension = false;
