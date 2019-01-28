@@ -11,21 +11,22 @@ namespace dl
 {
     class Program
     {
-       
+
 
         WebClient client = new WebClient();
         public int count = 0;
-        static string  masterDownload = "";
         static string url { get; set; }
         static string usernftp { get; set; }
         static string userpassftp { get; set; }
-        readonly List<string> programmingLangEx = new List<string>() { ".c", ".cc", ".class", ".clj", ".cpp", ".cs", ".cxx", ".el", ".go", ".h", ".java", ".lua", ".m", ".h", ".m4", ".php", ".pas", ".po", ".py", ".rb", ".rs", ".sh", ".sh", ".swift", ".vb", ".vcxproj", ".xcodeproj", ".xml", ".diff", ".patch",".exe" };
+        static string  masterDownload = "";
+        static bool WebException = false;
+        readonly List<string> programmingLangEx = new List<string>() { ".c", ".cc", ".class", ".clj", ".cpp", ".cs", ".cxx", ".el", ".go", ".h", ".java", ".lua", ".m", ".h", ".m4", ".php", ".pas", ".po", ".py", ".rb", ".rs", ".sh", ".sh", ".swift", ".vb", ".vcxproj", ".xcodeproj", ".xml", ".diff", ".patch", ".exe" };
 
         public string Rename(string path)
         {
             string tmpname = Path.GetFileName(path);
 
-            string name ="(" + count.ToString() + ")" + tmpname;
+            string name = "(" + count.ToString() + ")" + tmpname;
 
             StringBuilder addNew = new StringBuilder(path);
             while (Path.GetFileName(path) == name)
@@ -41,62 +42,63 @@ namespace dl
         }
 
         public void DownloadFTP(string path)
-        { 
-            
-       try
-          { 
-            string localpath = "";
-            string requirement = "";
-            if (File.Exists(path))
-            {
-                localpath = Rename(path);
-            }
-            else
-            {
-                localpath = path;
-            }
+        {
 
-            FtpWebRequest request = (FtpWebRequest)WebRequest.Create(url);
-            Console.WriteLine("Does FTP access require user/passsword?");
-            if (requirement.Contains("y") || requirement.Contains("yes"))
+            try
             {
-                Console.WriteLine("Enter a username for ftp"); usernftp = Console.ReadLine();
-                Console.WriteLine("Enter password for ftp"); userpassftp = Console.ReadLine();
+                string localpath = "";
+                string requirement = "";
+                if (File.Exists(path))
+                {
+                    localpath = Rename(path);
+                }
+                else
+                {
+                    localpath = path;
+                }
+
+                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(url);
+                Console.WriteLine("Does FTP access require user/passsword?");
+                if (requirement.Contains("y") || requirement.Contains("yes"))
+                {
+                    Console.WriteLine("Enter a username for ftp"); usernftp = Console.ReadLine();
+                    Console.WriteLine("Enter password for ftp"); userpassftp = Console.ReadLine();
+                    request.Credentials = new NetworkCredential(usernftp, userpassftp);
+                }
                 request.Credentials = new NetworkCredential(usernftp, userpassftp);
-            }
-            request.Credentials = new NetworkCredential(usernftp, userpassftp);
-            request.Method = WebRequestMethods.Ftp.DownloadFile;
+                request.Method = WebRequestMethods.Ftp.DownloadFile;
 
-            Console.WriteLine($"Downloading File");
-            using (Stream ftpStream = request.GetResponse().GetResponseStream())
-            using (Stream fileStream = File.Create(localpath))
-            {
-                ftpStream.CopyTo(fileStream);
+                Console.WriteLine($"Downloading File");
+                using (Stream ftpStream = request.GetResponse().GetResponseStream())
+                using (Stream fileStream = File.Create(localpath))
+                {
+                    ftpStream.CopyTo(fileStream);
+                }
+
             }
-                
-          }
-          catch (WebException ftpException)
-          {
-                    string exception = ftpException.Response.GetResponseStream().ToString();
-                    Console.WriteLine(exception);
-          }
+            catch (WebException ftpException)
+            {
+                string exception = ftpException.Response.GetResponseStream().ToString();
+                Console.WriteLine(exception);
+                WebException = true;
+            }
 
         }
 
         private static int GetIndexUrl(string str, char c, int n)
         {
-            int s = -1;
+            int stringPosition = -1;
 
             for (int i = 0; i < n; i++)
             {
-                s = str.IndexOf(c, s + 1);
+                stringPosition = str.IndexOf(c, stringPosition + 1);
 
-                if (s == -1) break;
+                if (stringPosition == -1) break;
             }
 
-            return s;
+            return stringPosition;
         }
-
+       
         public string giturl(string url)
         {
             string ext = "";
@@ -226,13 +228,17 @@ namespace dl
                 {
                     string exception = ex.Response.GetResponseStream().ToString();
                     Console.WriteLine(exception);
+                    WebException = true;
                 }
             }
 
-            Console.WriteLine($"Your file has been saved: {filePath}"); string opn = "";
-            Console.WriteLine("Open File Directory?"); opn = Console.ReadLine();
-            string selectedFile = "/select, \"" + filePath + "\"";
-            if (opn.Contains("y") || opn.Contains("yes")) Process.Start("explorer.exe", selectedFile);
+            if (!WebException)
+            {
+                Console.WriteLine($"Your file has been saved: {filePath}"); string opn = "";
+                Console.WriteLine("Open File Directory?"); opn = Console.ReadLine();
+                string selectedFile = "/select, \"" + filePath + "\"";
+                if (opn.Contains("y") || opn.Contains("yes")) Process.Start("explorer.exe", selectedFile);
+            }
         }
 
         public static void Main(string[] args)
@@ -246,6 +252,7 @@ namespace dl
             {
                 Download.DownloadFile();
                 Console.WriteLine("Do you want to download another file?"); cont = Console.ReadLine();
+                WebException = false;
                 cont = cont.ToLower();
             }
         }
