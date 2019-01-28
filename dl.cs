@@ -97,15 +97,14 @@ namespace dl
             return s;
         }
 
-
-        public string giturl(string url)
+public string giturl(string url)
         {
             string ext = "";
             int extPos = 0; bool existExtension = false;
             extPos = url.LastIndexOf(".") + 1;
             existExtension = (url.LastIndexOf(".") > 0) ? true : false;
 
-            if (existExtension)
+            if (existExtension && (programmingLangEx.Any(element => element.Contains(url.Substring(extPos, url.Length - extPos).ToString()))))
             {
                 ext = "." + url.Substring(extPos, url.Length - extPos).ToString();
             }
@@ -116,7 +115,7 @@ namespace dl
             
             int masterDirIndex = 0;
             Console.WriteLine("Download Master? ");
-            masterDownload = Console.ReadLine();
+            masterDownload = Console.ReadLine();masterDownload = masterDownload.ToLower();
 
             masterDirIndex = GetIndexUrl(url, '/', 5);
 
@@ -134,8 +133,14 @@ namespace dl
                 
                 return url;
             }
-            else if ((!url.Contains("/blob/") && ext == "" && (masterDownload.Equals("yes") || masterDownload.Equals("y")) && masterDirIndex != -1))
+            else if ((!url.Contains("/blob/") && ext == "" && ((masterDownload=="yes") || masterDownload=="y"))  && (masterDirIndex >=-1))
             {
+                if (masterDirIndex == -1)
+                {
+                    url+= "/archive/master.zip";
+                    return url;
+                }
+
                 url = url.Substring(0, masterDirIndex);
                 url += "/archive/master.zip";
                
@@ -144,8 +149,7 @@ namespace dl
 
             return url;
         }
-        
-        
+
         public void DownloadFile()
         {
 
@@ -164,6 +168,7 @@ namespace dl
             if (url.Contains("github.com"))
             {
                 url = giturl(url);
+                Console.WriteLine(url);
             }
 
             int pos = 0;
@@ -176,11 +181,11 @@ namespace dl
                     int maxprojectIndex = GetIndexUrl(url, '/', 5);
 
                     maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
-
                     string projectName = "";
                     projectName = url.Substring(minprojectIndex + 1, maxprojectIndex).ToString();
                     pos = url.LastIndexOf("/") + 1;
                     filePath = url.Substring(pos, url.Length - pos).ToString();
+                    
                     filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-" + filePath;
                   
                 }
