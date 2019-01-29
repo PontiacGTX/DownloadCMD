@@ -5,7 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.Diagnostics;
+using System.ComponentModel;
 using System.IO;
+using System.Threading;
 
 namespace dl
 {
@@ -15,12 +17,14 @@ namespace dl
 
         WebClient client = new WebClient();
         public int count = 0;
+        static double progress { get; set; }
         static string url { get; set; }
         static string usernftp { get; set; }
         static string userpassftp { get; set; }
+        static string fpath { get; set; }
         static string  masterDownload = "";
         static bool WebException = false;
-        readonly List<string> programmingLangEx = new List<string>() { ".c", ".cc", ".class", ".clj", ".cpp", ".cs", ".cxx", ".el", ".go", ".h", ".java", ".lua", ".m", ".h", ".m4", ".php", ".pas", ".po", ".py", ".rb", ".rs", ".sh", ".sh", ".swift", ".vb", ".vcxproj", ".xcodeproj", ".xml", ".diff", ".patch", ".exe"};
+        readonly List<string> programmingLangEx = new List<string>() { ".c", ".cc", ".class", ".clj", ".cpp", ".cs", ".cxx", ".el", ".go", ".h", ".java", ".lua", ".m", ".h", ".m4", ".php", ".pas", ".po", ".py", ".rb", ".rs", ".sh", ".sh", ".swift", ".vb", ".vcxproj", ".xcodeproj", ".xml", ".diff", ".patch", ".exe" };
 
         public string Rename(string path)
         {
@@ -85,7 +89,7 @@ namespace dl
 
         }
 
-        private static int GetIndexUrl(string str, char c, int n)
+        private static int GetIndex(string str, char c, int n)
         {
             int stringPosition = -1;
 
@@ -119,7 +123,7 @@ namespace dl
             Console.WriteLine("Download Master? ");
             masterDownload = Console.ReadLine();masterDownload = masterDownload.ToLower();
 
-            masterDirIndex = GetIndexUrl(url, '/', 5);
+            masterDirIndex = GetIndex(url, '/', 5);
 
             if (url.Contains("/blob/") && ext != "" && (programmingLangEx.Any(element => element.Contains(ext))) && masterDownload != "y" && masterDownload != "yes")
             {
@@ -151,6 +155,18 @@ namespace dl
 
             return url;
         }
+        
+        public void OpenFolder()
+        {
+            if (!WebException)
+            {
+                Console.WriteLine($"\nYour file has been saved: {fpath}"); string opn = "";
+                Console.WriteLine("Open File Directory?"); opn = Console.ReadLine();
+                string selectedFile = "/select, \"" + fpath + "\"";
+                if (opn.Contains("y") || opn.Contains("yes")) Process.Start("explorer.exe", selectedFile);
+                WebException = false;
+            }
+        }
 
         public void DownloadFile()
         {
@@ -179,10 +195,11 @@ namespace dl
             {
                 if (masterDownload == "yes" || masterDownload == "y")
                 {
-                    int minprojectIndex = GetIndexUrl(url, '/', 4);
-                    int maxprojectIndex = GetIndexUrl(url, '/', 5);
+                    int minprojectIndex = GetIndex(url, '/', 4);
+                    int maxprojectIndex = GetIndex(url, '/', 5);
 
                     maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
+
                     string projectName = "";
                     projectName = url.Substring(minprojectIndex + 1, maxprojectIndex).ToString();
                     pos = url.LastIndexOf("/") + 1;
@@ -212,6 +229,8 @@ namespace dl
             {
                 filePath = Rename(filePath);
             }
+
+            fpath = filePath;
             Console.WriteLine($"Downloading File");
             if (url.Contains("ftp"))
             {
@@ -221,8 +240,10 @@ namespace dl
             {
                 try
                 {
+                    WebRequest.DefaultWebProxy = null;
                     client.Headers.Add("User-Agent", "Mozilla / 5.0(Windows NT 10.0; Win64; x64) AppleWebKit / 537.36(KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36");
-                    client.DownloadFile(url, filePath);
+                    
+                    client.DownloadFile(url,filePath);
                 }
                 catch (WebException ex)
                 {
@@ -231,16 +252,13 @@ namespace dl
                     WebException = true;
                 }
             }
+            
 
-            if (!WebException)
-            {
-                Console.WriteLine($"Your file has been saved: {filePath}"); string opn = "";
-                Console.WriteLine("Open File Directory?"); opn = Console.ReadLine();
-                string selectedFile = "/select, \"" + filePath + "\"";
-                if (opn.Contains("y") || opn.Contains("yes")) Process.Start("explorer.exe", selectedFile);
-            }
+            OpenFolder();
+            Console.WriteLine("Do you want to download another file?");
+
         }
-
+        
         public static void Main(string[] args)
         {
             Program Download = new Program();
@@ -251,10 +269,12 @@ namespace dl
             while (!cont.Contains("no"))
             {
                 Download.DownloadFile();
-                Console.WriteLine("Do you want to download another file?"); cont = Console.ReadLine();
+                
+                cont = Console.ReadLine();
                 WebException = false;
                 cont = cont.ToLower();
             }
+
         }
     }
 }
