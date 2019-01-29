@@ -24,7 +24,7 @@ namespace dl
         static string fpath { get; set; }
         static string  masterDownload = "";
         static bool WebException = false;
-        readonly List<string> programmingLangEx = new List<string>() { ".c", ".cc", ".class", ".clj", ".cpp", ".cs", ".cxx", ".el", ".go", ".h", ".java", ".lua", ".m", ".h", ".m4", ".php", ".pas", ".po", ".py", ".rb", ".rs", ".sh", ".sh", ".swift", ".vb", ".vcxproj", ".xcodeproj", ".xml", ".diff", ".patch", ".exe" };
+        readonly List<string> pLangExt = new List<string>() { ".c", ".cc", ".class", ".clj", ".cpp", ".cs", ".cxx", ".el", ".go", ".h", ".java", ".lua", ".m", ".h", ".m4", ".php", ".pas", ".po", ".py", ".rb", ".rs", ".sh", ".sh", ".swift", ".vb", ".vcxproj", ".xcodeproj", ".xml", ".diff", ".patch", ".exe" };
 
         public string Rename(string path)
         {
@@ -110,7 +110,7 @@ namespace dl
             extPos = url.LastIndexOf(".") + 1;
             existExtension = (url.LastIndexOf(".") > 0) ? true : false;
 
-            if (existExtension && (programmingLangEx.Any(element => element.Contains(url.Substring(extPos, url.Length - extPos).ToString()))))
+            if (existExtension && (pLangExt.Any(element => element.Contains(url.Substring(extPos, url.Length - extPos).ToString()))))
             {
                 ext = "." + url.Substring(extPos, url.Length - extPos).ToString();
             }
@@ -125,7 +125,7 @@ namespace dl
 
             masterDirIndex = GetIndex(url, '/', 5);
 
-            if (url.Contains("/blob/") && ext != "" && (programmingLangEx.Any(element => element.Contains(ext))) && masterDownload != "y" && masterDownload != "yes")
+            if (url.Contains("/blob/") && ext != "" && (pLangExt.Any(element => element.Contains(ext))) && masterDownload != "y" && masterDownload != "yes")
             {
                 url = AddtoURL.Replace("/blob/", "/").ToString();
                 url = AddtoURL.Replace("github", "raw.githubusercontent").ToString();
