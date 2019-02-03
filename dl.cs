@@ -357,10 +357,10 @@ namespace dl
 
             while (!cont.Contains("no"))
             {
-                Download.DownloadFile();
-
+                
                 Console.WriteLine("Do you want to download another file?");
                 cont = Console.ReadLine();
+                Download.DownloadFile();
                 WebException = false;
                 cont = cont.ToLower();
             }
