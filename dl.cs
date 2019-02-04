@@ -13,19 +13,18 @@ namespace dl
 {
     partial class Program
     {
-
+        
         WebClient client = new WebClient();
         public int count = 0;
         static string url { get; set; }
         static string usernftp { get; set; }
         static string userpassftp { get; set; }
         static string fpath { get; set; }
-        static string masterDownload = "";
+        static string  masterDownload = "";
         static bool WebException = false;
-        static bool error = false;
         readonly List<string> programmingLangEx = new List<string>() { ".c", ".cc", ".class", ".clj", ".cpp", ".cs", ".cxx", ".el", ".go", ".h", ".java", ".lua", ".m", ".h", ".m4", ".php", ".pas", ".po", ".py", ".rb", ".rs", ".sh", ".sh", ".swift", ".vb", ".vcxproj", ".xcodeproj", ".xml", ".diff", ".patch", ".exe" };
 
-
+        
         public string Rename(string path)
         {
             string tmpname = Path.GetFileName(path);
@@ -53,7 +52,7 @@ namespace dl
 
             return name;
         }
-
+        
 
         public void DownloadFTP(string path)
         {
@@ -111,24 +110,28 @@ namespace dl
             }
             return stringPosition;
         }
-
-        public string getExt()
+       
+        public string GetExt()
         {
 
             int extPos = url.LastIndexOf(".") + 1;
-            bool ExtensioninURL = (url.LastIndexOf(".") > 0) ? true : false;
+            string foundExtension = "";
+            foundExtension = Path.GetExtension(url);
+            bool ExtensioninURL = (foundExtension!="") ? true : false;
+            //"." + url.Substring(extPos, url.Length - extPos).ToString();
+            //string inList = null;
+            //inList = extensionList.SingleOrDefault(s => s.Equals(foundExtension));
+            //bool MatchesExtension = inList!=null;
 
             if (ExtensioninURL)
             {
-                string ext = "";
-                ext = "." + url.Substring(extPos, url.Length - extPos).ToString();
-                return ext;
+               return foundExtension;
             }
 
             return "";
         }
 
-        public void showElements(List<int> positions)
+        public void ShowElements(List<int> positions)
         {
             for (int i = 0; i < positions.Count; i++)
             {
@@ -136,68 +139,80 @@ namespace dl
             }
         }
 
+        public List<int> FindExtensionPos(HttpWebResponse result)
+        {
+            return mimeList.Select((value, index) => new { value, Index = index }).Where(x => x.value.Equals(Path.GetFileName(result.Headers["Content-Type"]))).Select(x => x.Index).ToList();
+        }
+        
         public string giturl(string url)
         {
             string ext = "";
 
-            ext = getExt();
+            ext = GetExt();
 
             string urlFileName = url.Substring(url.LastIndexOf("/") + 1, url.Length - (url.LastIndexOf("/") + 1));
 
             StringBuilder AddtoURL = new StringBuilder(url);
-
+            
             int masterDirIndex = 0;
             Console.WriteLine("Download Master? ");
-            masterDownload = Console.ReadLine(); masterDownload = masterDownload.ToLower();
+            masterDownload = Console.ReadLine();masterDownload = masterDownload.ToLower();
 
             masterDirIndex = GetIndex(url, '/', 5);
+            //bool isCompleted = masterDirIndex > -1;
+            //if (!isCompleted && (masterDownload=="yes" || masterDownload=="y"))
+            //{
+            //    url += '/';
+            //    masterDirIndex = GetIndex(url, '/', 5);
+            //}
 
             if (url.Contains("/blob/") && ext != "" && (programmingLangEx.Any(element => element.Contains(ext))) && masterDownload != "y" && masterDownload != "yes")
             {
                 url = AddtoURL.Replace("/blob/", "/").ToString();
                 url = AddtoURL.Replace("github", "raw.githubusercontent").ToString();
-
+                
                 return url;
             }
-            else if (url.Contains("/blob/") && ext == "" && masterDownload != "y" && masterDownload != "yes")
+            else if (url.Contains("/blob/") && ext == "" && masterDownload != "y" && masterDownload != "yes" )
             {
+              
                 url = AddtoURL.Replace("/blob/", "/").ToString();
                 url = AddtoURL.Replace("github", "raw.githubusercontent").ToString();
-
+                
                 return url;
             }
-            else if ((!url.Contains("/blob/") && ext == "" && ((masterDownload == "yes") || masterDownload == "y")) && (masterDirIndex >= -1))
+            else if ((!url.Contains("/blob/") && ext == "" && ((masterDownload=="yes") || masterDownload=="y"))  && (masterDirIndex >=-1))
             {
+                url = AddtoURL.Replace("github.com", "codeload.github.com").ToString();
+
                 if (masterDirIndex == -1)
                 {
-                    url += "/archive/master.zip";
+                    url+= "zip/master";
                     return url;
                 }
 
-                url = url.Substring(0, masterDirIndex);
-                url += "/archive/master.zip";
-
+                url = url.Substring(0, url.Length);
+                url += "/zip/master";
                 return url;
             }
 
             return url;
         }
-
+       
 
         public void OpenFolder()
         {
-
-            Console.WriteLine($"\nYour file has been saved: {fpath}"); string opn = "";
-            Console.WriteLine("Open File Directory?"); opn = Console.ReadLine();
-            string selectedFile = "/select, \"" + fpath + "\"";
-            if (opn.Contains("y") || opn.Contains("yes")) Process.Start("explorer.exe", selectedFile);
-            WebException = false;
+           
+                Console.WriteLine($"\nYour file has been saved: {fpath}"); string opn = "";
+                Console.WriteLine("Open File Directory?"); opn = Console.ReadLine();
+                string selectedFile = "/select, \"" + fpath + "\"";
+                if (opn.Contains("y") || opn.Contains("yes")) Process.Start("explorer.exe", selectedFile);
+                WebException = false;
         }
 
         public void DownloadFile()
         {
-            
-            
+
             string filePath = "";
             Console.WriteLine("Enter a URL");
             url = Console.ReadLine();
@@ -215,7 +230,6 @@ namespace dl
             if (url.Contains("github.com"))
             {
                 url = giturl(url);
-                Console.WriteLine(url);
             }
 
             int pos = 0;
@@ -226,23 +240,35 @@ namespace dl
                 {
                     int minprojectIndex = GetIndex(url, '/', 4);
                     int maxprojectIndex = GetIndex(url, '/', 5);
-
+               // https://codeload.github.com/icebeam7/XamarinWhatsapp/zip/master
+                    bool isCompleted = maxprojectIndex > -1;
+                    if (!isCompleted)
+                    {
+                        url += '/';
+                        maxprojectIndex = GetIndex(url, '/', 5);
+                    }
                     maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
 
                     string projectName = "";
                     projectName = url.Substring(minprojectIndex + 1, maxprojectIndex).ToString();
-
+                
                     filePath = GetName();
 
-                    filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-" + filePath;
-
+                    if (filePath != "")
+                    {
+                        filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-" + filePath + ".zip";
+                    }
+                    else
+                    {
+                        filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
+                    }
                 }
                 else
                 {
                     pos = url.LastIndexOf("/") + 1;
                     filePath = url.Substring(pos, url.Length - pos).ToString();
                     filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + filePath;
-
+                    
                 }
                 masterDownload = "";
             }
@@ -250,7 +276,7 @@ namespace dl
             {
                 string ext = "";
 
-                ext = getExt();
+                ext = GetExt();
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                 request.Method = WebRequestMethods.Http.Get;
@@ -258,58 +284,38 @@ namespace dl
 
                 bool hasMIMEtype = false;
 
-                List<int> indexes = mimeList.Select((value, index) => new { value, Index = index }).Where(x => x.value.Equals(Path.GetFileName(result.Headers["Content-Type"]))).Select(x => x.Index).ToList();
+                List<int> indexes = FindExtensionPos(result);
+
                 hasMIMEtype = indexes.Any();
 
                 if ((hasMIMEtype) && (ext == ""))
                 {
-                    try
-                    {
-                        int posList = -1;
+                    int posList = -1;
 
-                        if (indexes.Count > 1)
-                        {
-                            showElements(indexes);
-                            Console.WriteLine("Enter the number which extension belongs to the file:");
-                            posList = int.Parse(Console.ReadLine());
-                        }
-                        else if (indexes.Count == 1)
-                        {
-                            posList = indexes[0];
-                            filePath = GetName() + extensionList[posList];
-                        }
-                        else if (indexes < 1)
-                        {
-
-                            Console.WriteLine("Extension not Found. \nEnter file Extension: ");string localext = Console.ReadLine().ToLower().ToString();
-                            if (localext.LastIndexOf("."))
-                            {
-                                filePath = GetName() + localext;
-                            }
-                            else
-                            {
-                                filePath = GetName + '.' +localext;
-                            }
-                        }
-                        filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + filePath;
-                        indexes.Clear();
-                    }
-                    catch (Exception ex)
+                    if (indexes.Count > 1)
                     {
-                        Console.WriteLine(Ex.ToString());
-                        error = true;
+                        ShowElements(indexes);
+                        Console.WriteLine("Enter the number which extension belongs to the file:");
+                        posList = int.Parse(Console.ReadLine());
                     }
+                    else if (indexes.Count==1)
+                    {
+                        posList = indexes[0];
+                    }
+                    filePath = GetName() + extensionList[posList];                    
+                    filePath = "C:\\Users\\" + Environment.UserName.ToString()  + "\\Downloads" + "\\" + filePath;
+                    indexes.Clear();
                 }
-                else if (hasMIMEtype && ext != "")
+                else if (hasMIMEtype && ext!="")
                 {
                     filePath = GetName();
-                    filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + filePath;
+                    filePath = "C:\\Users\\" + Environment.UserName.ToString() + "\\Downloads" + "\\" + filePath;
                 }
-
+                
                 hasMIMEtype = false;
                 ext = "";
             }
-
+            
             if (File.Exists(filePath))
             {
                 filePath = Rename(filePath);
@@ -317,11 +323,11 @@ namespace dl
 
             fpath = filePath;
             Console.WriteLine($"Downloading File");
-            if (url.Contains("ftp") && !error)
+            if (url.Contains("ftp"))
             {
                 DownloadFTP(filePath);
             }
-            else if (url.Contains("http") && !error)
+            else
             {
                 try
                 {
@@ -333,21 +339,21 @@ namespace dl
                 }
                 catch (WebException ex)
                 {
-                    string exception = ex.InnerException.ToString();
+                    string exception = ex.InnerException.ToString();   
                     Console.WriteLine(exception);
                     WebException = true;
                 }
             }
 
-            if (!WebException && File.Exists(filePath) && !error )
+            if (!WebException && File.Exists(filePath))
             {
                 OpenFolder();
             }
-
             WebException = false;
-            error = false;
-        }
+            Console.WriteLine("Do you want to download another file?");
 
+        }
+        
         public static void Main(string[] args)
         {
             Program Download = new Program();
@@ -357,10 +363,9 @@ namespace dl
 
             while (!cont.Contains("no"))
             {
-                
-                Console.WriteLine("Do you want to download another file?");
-                cont = Console.ReadLine();
                 Download.DownloadFile();
+                
+                cont = Console.ReadLine();
                 WebException = false;
                 cont = cont.ToLower();
             }
