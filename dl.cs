@@ -240,7 +240,7 @@ namespace dl
                 {
                     int minprojectIndex = GetIndex(url, '/', 4);
                     int maxprojectIndex = GetIndex(url, '/', 5);
-               // https://codeload.github.com/icebeam7/XamarinWhatsapp/zip/master
+               
                     bool isCompleted = maxprojectIndex > -1;
                     if (!isCompleted)
                     {
