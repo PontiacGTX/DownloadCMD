@@ -118,10 +118,7 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension!="") ? true : false;
-            //"." + url.Substring(extPos, url.Length - extPos).ToString();
-            //string inList = null;
-            //inList = extensionList.SingleOrDefault(s => s.Equals(foundExtension));
-            //bool MatchesExtension = inList!=null;
+         
 
             if (ExtensioninURL)
             {
@@ -159,12 +156,7 @@ namespace dl
             masterDownload = Console.ReadLine();masterDownload = masterDownload.ToLower();
 
             masterDirIndex = GetIndex(url, '/', 5);
-            //bool isCompleted = masterDirIndex > -1;
-            //if (!isCompleted && (masterDownload=="yes" || masterDownload=="y"))
-            //{
-            //    url += '/';
-            //    masterDirIndex = GetIndex(url, '/', 5);
-            //}
+           
 
             if (url.Contains("/blob/") && ext != "" && (programmingLangEx.Any(element => element.Contains(ext))) && masterDownload != "y" && masterDownload != "yes")
             {
@@ -187,7 +179,7 @@ namespace dl
 
                 if (masterDirIndex == -1)
                 {
-                    url+= "zip/master";
+                    url+= "/zip/master";
                     return url;
                 }
 
@@ -240,7 +232,7 @@ namespace dl
                 {
                     int minprojectIndex = GetIndex(url, '/', 4);
                     int maxprojectIndex = GetIndex(url, '/', 5);
-               
+               // https://codeload.github.com/icebeam7/XamarinWhatsapp/zip/master
                     bool isCompleted = maxprojectIndex > -1;
                     if (!isCompleted)
                     {
@@ -331,15 +323,15 @@ namespace dl
             {
                 try
                 {
-                    WebRequest.DefaultWebProxy = null;
-                    client.Headers.Add("User-Agent", "Mozilla / 5.0(Windows NT 10.0; Win64; x64) AppleWebKit / 537.36(KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36");
+                    WebRequest.DefaultWebProxy = null; 
+                    client.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36");
 
                     client.DownloadFile(url, filePath);
 
                 }
                 catch (WebException ex)
                 {
-                    string exception = ex.InnerException.ToString();   
+                    string exception = ex.ToString(); 
                     Console.WriteLine(exception);
                     WebException = true;
                 }
