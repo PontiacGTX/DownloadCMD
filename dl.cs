@@ -187,7 +187,7 @@ namespace dl
                     return url;
                 }
 
-                url = url.Substring(0, masterDirIndex);
+                url = url.Substring(0, GetIndex(url, '/', 5));
                 url += "zip/master";
                 return url;
             }
