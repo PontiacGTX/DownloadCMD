@@ -118,7 +118,7 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension!="") ? true : false;
-           
+            
 
             if (ExtensioninURL)
             {
@@ -239,18 +239,18 @@ namespace dl
                 url = Console.ReadLine();
             }
 
-            
+           
             int pos = 0;
 
             if (url.Contains("github"))
             {
                 url = giturl(url);
-                
+
                 if (masterDownload == "yes" || masterDownload == "y")
                 {
                     int minprojectIndex = GetIndex(url, '/', 4);
                     int maxprojectIndex = GetIndex(url, '/', 5);
-               
+                    
                     bool isCompleted = maxprojectIndex > -1;
                     if (!isCompleted)
                     {
