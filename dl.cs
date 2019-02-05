@@ -223,12 +223,17 @@ namespace dl
             string filePath = "";
             Console.WriteLine("Enter a URL");
             url = Console.ReadLine();
+            
+           
+            if (!url.Contains("http://") || !url.Contains("https://") && url.Contains("www."))
+            {
+                StringBuilder Addinurl = new StringBuilder(url);
+                url = Addinurl.Replace("www.", "https://").ToString(); ;
+            }
             int protocolWordlength = url.IndexOf(':');
             string protocol = (protocolWordlength > 0) ? url.Substring(0, protocolWordlength) : "";
 
-            //without http/https/ftp missing
-
-            while (!(protocol == "http" || protocol == "https" || protocol == "ftp" || protocol == ""))
+            while (!(protocol == "http" || protocol == "https" || protocol == "ftp" /*|| protocol == ""*/))
             {
                 Console.WriteLine("Enter a valid URL");
                 url = Console.ReadLine();
