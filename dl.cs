@@ -181,7 +181,7 @@ namespace dl
             {
                 url = AddtoURL.Replace("github.com", "codeload.github.com").ToString();
 
-                if (masterDirIndex == -1)
+                if (GetIndex(url, '/', 5) == -1)
                 {
                     url += "/zip/master";
                     return url;
