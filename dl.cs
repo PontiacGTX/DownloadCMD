@@ -234,15 +234,13 @@ namespace dl
                 url = Console.ReadLine();
             }
 
-            if (url.Contains("github.com"))
-            {
-                url = giturl(url);
-            }
-
+            
             int pos = 0;
 
             if (url.Contains("github"))
             {
+                url = giturl(url);
+                
                 if (masterDownload == "yes" || masterDownload == "y")
                 {
                     int minprojectIndex = GetIndex(url, '/', 4);
