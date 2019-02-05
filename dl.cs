@@ -118,7 +118,7 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension!="") ? true : false;
-         
+           
 
             if (ExtensioninURL)
             {
@@ -156,36 +156,51 @@ namespace dl
             masterDownload = Console.ReadLine();masterDownload = masterDownload.ToLower();
 
             masterDirIndex = GetIndex(url, '/', 5);
-           
+            bool isCompleted = masterDirIndex > -1;
+            if (!isCompleted && (masterDownload=="yes" || masterDownload=="y"))
+            {
+                url += '/';
+                masterDirIndex = GetIndex(url, '/', 5);
+            }
 
             if (url.Contains("/blob/") && ext != "" && (programmingLangEx.Any(element => element.Contains(ext))) && masterDownload != "y" && masterDownload != "yes")
             {
                 url = AddtoURL.Replace("/blob/", "/").ToString();
                 url = AddtoURL.Replace("github", "raw.githubusercontent").ToString();
-                
                 return url;
             }
-            else if (url.Contains("/blob/") && ext == "" && masterDownload != "y" && masterDownload != "yes" )
+            else if (url.Contains("/blob/") && ext == "" && masterDownload != "y" && masterDownload != "yes")
             {
-              
+
                 url = AddtoURL.Replace("/blob/", "/").ToString();
                 url = AddtoURL.Replace("github", "raw.githubusercontent").ToString();
-                
+
                 return url;
             }
-            else if ((!url.Contains("/blob/") && ext == "" && ((masterDownload=="yes") || masterDownload=="y"))  && (masterDirIndex >=-1))
+            else if ((!url.Contains("/blob/") && ext == "" && ((masterDownload == "yes") || masterDownload == "y")) && (masterDirIndex >= -1))
             {
                 url = AddtoURL.Replace("github.com", "codeload.github.com").ToString();
 
                 if (masterDirIndex == -1)
                 {
-                    url+= "/zip/master";
+                    url += "/zip/master";
                     return url;
                 }
 
-                url = url.Substring(0, url.Length);
+                url = url.Substring(0, masterDirIndex);
+                url += "zip/master";
+                return url;
+            }
+            else if ((url.Contains("/blob/") && ext != "" && ((masterDownload == "yes") || masterDownload == "y")) && (masterDirIndex >= -1))
+            {
+                url = AddtoURL.Replace("github.com", "codeload.github.com").ToString();
+
+                url = url.Substring(0, GetIndex(url, '/', 5));
+                
                 url += "/zip/master";
                 return url;
+                
+                
             }
 
             return url;
@@ -232,7 +247,7 @@ namespace dl
                 {
                     int minprojectIndex = GetIndex(url, '/', 4);
                     int maxprojectIndex = GetIndex(url, '/', 5);
-               // https://codeload.github.com/icebeam7/XamarinWhatsapp/zip/master
+               
                     bool isCompleted = maxprojectIndex > -1;
                     if (!isCompleted)
                     {
@@ -331,7 +346,8 @@ namespace dl
                 }
                 catch (WebException ex)
                 {
-                    string exception = ex.ToString(); 
+                    string exception = ex.ToString();
+                    //    ex.InnerException.ToString();   
                     Console.WriteLine(exception);
                     WebException = true;
                 }
