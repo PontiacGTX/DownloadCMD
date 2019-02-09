@@ -8,12 +8,38 @@ using System.Net;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Net.Http.Formatting;
+using System.Net.Http;
 
 namespace dl
 {
     partial class Program
     {
+        public class Rootobject
+        {
+           
+            public string name { get; set; }
+            public Asset[] assets { get; set; }
+            public string tarball_url { get; set; }
+            public string zipball_url { get; set; }
+            public string body { get; set; }
+        }
+
         
+
+        public class Asset
+        {
+            public string name { get; set; }
+            public string label { get; set; }
+            public string content_type { get; set; }
+            public string state { get; set; }
+            public int size { get; set; }
+            public DateTime created_at { get; set; }
+            public DateTime updated_at { get; set; }
+            public string browser_download_url { get; set; }
+        }
+
+
         WebClient client = new WebClient();
         public int count = 0;
         static string url { get; set; }
@@ -22,6 +48,8 @@ namespace dl
         static string fpath { get; set; }
         static string  masterDownload = "";
         static bool WebException = false;
+        public static string githubAPI = "http://api.github.com/repos/:owner/:repo/releases";
+
         readonly List<string> programmingLangEx = new List<string>() { ".c", ".cc", ".class", ".clj", ".cpp", ".cs", ".cxx", ".el", ".go", ".h", ".java", ".lua", ".m", ".h", ".m4", ".php", ".pas", ".po", ".py", ".rb", ".rs", ".sh", ".sh", ".swift", ".vb", ".vcxproj", ".xcodeproj", ".xml", ".diff", ".patch", ".exe" };
 
         
@@ -110,7 +138,26 @@ namespace dl
             }
             return stringPosition;
         }
-       
+
+        public static string GetProjectName(string url)
+        {
+            int pos = GetIndex(url, '/', 3) + 1;
+
+            string name = url.Substring(pos, (GetIndex(url, '/', 4)) - pos);
+
+            return name;
+        }
+
+        public static string GetRepo(string url)
+        {
+            int pos = GetIndex(url, '/', 4) + 1;
+
+            int last = (GetIndex(url, '/', 5) > -1) ? (GetIndex(url, '/', 5) ) : url.Length;
+
+            string repo = url.Substring(pos, last - pos);
+            return repo;
+        }
+
         public string GetExt()
         {
 
@@ -118,7 +165,10 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension!="") ? true : false;
-            
+            //"." + url.Substring(extPos, url.Length - extPos).ToString();
+            //string inList = null;
+            //inList = extensionList.SingleOrDefault(s => s.Equals(foundExtension));
+            //bool MatchesExtension = inList!=null;
 
             if (ExtensioninURL)
             {
@@ -153,7 +203,7 @@ namespace dl
             
             int masterDirIndex = 0;
             Console.WriteLine("Download Master? ");
-            masterDownload = Console.ReadLine();masterDownload = masterDownload.ToLower();
+            masterDownload = Console.ReadLine().ToLower();
 
             masterDirIndex = GetIndex(url, '/', 5);
             bool isCompleted = masterDirIndex > -1;
@@ -205,7 +255,70 @@ namespace dl
 
             return url;
         }
-       
+        public string GetReleaseUrl()
+        {
+            StringBuilder addurl = new StringBuilder(githubAPI);
+            addurl.Replace(":owner", GetProjectName(url));
+            addurl.Replace(":repo", GetRepo(url));
+            githubAPI = addurl.ToString();
+            Rootobject results = new Rootobject();
+            HttpClient client = new HttpClient();
+
+            client.BaseAddress = new Uri(githubAPI);
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36");
+            HttpResponseMessage response = client.PostAsJsonAsync(githubAPI, results).Result;
+
+            response.EnsureSuccessStatusCode();
+
+            var compressedFiles = response.Content.ReadAsAsync<IEnumerable<Rootobject>>().GetAwaiter().GetResult();
+
+            List<Rootobject> downloadElements = compressedFiles.ToList();
+
+            Console.WriteLine("Do you want to Download zip/tar/other files? write the option to show a list of Releases ");
+
+            string fileTypeToShow = Console.ReadLine().ToLower();
+
+            Console.WriteLine($"Description:  {downloadElements[0].body}  \n\nSelect one Option:");
+            int Selection = -1;
+            if (fileTypeToShow == "zip")
+            {
+                for (int i = 0; i < downloadElements.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}) {GetRepo(url)}-{Path.GetFileName(downloadElements[i].zipball_url)}.zip");
+                }
+                Console.WriteLine("Select Number: ");
+                Selection = int.Parse(Console.ReadLine());
+             return  downloadElements[Selection - 1].zipball_url;
+            }
+            else if (fileTypeToShow == "tar")
+            {
+                for (int i = 0; i < downloadElements.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}) {GetRepo(url)}-{Path.GetFileName(downloadElements[i].tarball_url)}.tar");
+                }
+                Console.WriteLine("Select Number: ");
+                Selection = int.Parse(Console.ReadLine());
+            return downloadElements[Selection - 1].tarball_url;
+            }
+            else if (fileTypeToShow == "other")
+            {
+                List<string> urlList = new List<string>();
+                for (int i = 0; i < downloadElements.Count; i++)
+                {
+                    foreach (Asset File in downloadElements[i].assets)
+                    {
+                        Console.WriteLine($"{i + 1}) {Path.GetFileName(File.browser_download_url)}       {File.size / 1048576} MB");
+                        urlList.Add(File.browser_download_url);
+                    }
+                }
+                Console.WriteLine("Select Number: ");
+                Selection = int.Parse(Console.ReadLine());
+                return urlList[Selection - 1];
+            }
+            fileTypeToShow = "";
+
+            return null;
+        }
 
         public void OpenFolder()
         {
@@ -244,25 +357,141 @@ namespace dl
 
             if (url.Contains("github"))
             {
-                url = giturl(url);
+                url = (GetIndex(url, '/', 5) > -1) ? url : url += '/';
 
-                if (masterDownload == "yes" || masterDownload == "y")
+                string releasesInUrl = url.Substring((GetIndex(url, '/', 5) + 1), ((GetIndex(url, '/', 6) > -1) ? (GetIndex(url, '/', 6) + 1) : url.Length) - (GetIndex(url, '/', 5) + 1)).ToString().ToLower();
+                string resultingurl = "";
+                if (!(releasesInUrl == "releases"))
                 {
-                    int minprojectIndex = GetIndex(url, '/', 4);
-                    int maxprojectIndex = GetIndex(url, '/', 5);
-                    
-                    bool isCompleted = maxprojectIndex > -1;
-                    if (!isCompleted)
+
+                    string releaseFiles = "";
+                    Console.WriteLine("Do you want to Download Latest Release? Yes/No");
+                    releaseFiles = Console.ReadLine().ToLower();
+
+                    if (releaseFiles == "yes" || releaseFiles == "yes")
+                    {
+                        resultingurl = GetReleaseUrl();
+                        if (resultingurl == "" || resultingurl == null)
+                        {
+                            Console.WriteLine("No Releases were found");
+                        }
+                        else
+                        {
+                            url = resultingurl;
+                        }
+                        int maxprojectIndex = 0;
+
+                        if (!(GetIndex(url, '/', 5) > -1))
+                        {
+                            url += '/';
+                            maxprojectIndex = GetIndex(url, '/', 5);
+                        }
+
+                        int minprojectIndex = GetIndex(url, '/', 4);
+                        maxprojectIndex = GetIndex(url, '/', 5);
+
+
+                        // https://codeload.github.com/icebeam7/XamarinWhatsapp/zip/master
+
+                        maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
+
+                        string projectName = "";
+                        projectName = url.Substring(minprojectIndex + 1, maxprojectIndex).ToString();
+
+                        filePath = filePath = Path.GetFileName(url);
+
+                        if (filePath != "")
+                        {
+                            filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-" + filePath + ".zip";
+                        }
+                        else
+                        {
+                            filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
+                        }
+
+                        //DownloadRelease
+                    }
+                    else
+                    {
+                        url = giturl(url);
+
+
+                        if (masterDownload == "yes" || masterDownload == "y")
+                        {
+
+                            int maxprojectIndex = 0;
+
+                            if (!(GetIndex(url, '/', 5) > -1))
+                            {
+                                url += '/';
+                                maxprojectIndex = GetIndex(url, '/', 5);
+                            }
+
+                            int minprojectIndex = GetIndex(url, '/', 4);
+                            maxprojectIndex = GetIndex(url, '/', 5);
+
+
+                            // https://codeload.github.com/icebeam7/XamarinWhatsapp/zip/master
+
+                            maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
+
+                            string projectName = "";
+                            projectName = url.Substring(minprojectIndex + 1, maxprojectIndex).ToString();
+
+                            filePath = GetName();
+
+                            if (filePath != "")
+                            {
+                                filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-" + filePath + ".zip";
+                            }
+                            else
+                            {
+                                filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
+                            }
+                        }
+                        else if ((!(masterDownload == "yes") || !(masterDownload == "y")))
+                        {
+                            pos = url.LastIndexOf("/") + 1;
+                            filePath = url.Substring(pos, url.Length - pos).ToString();
+                            filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + filePath;
+
+                        }
+
+                    } 
+                    releaseFiles = "";
+                }
+                else
+                {
+
+                    resultingurl = GetReleaseUrl();
+                    if (resultingurl == "" || resultingurl == null)
+                    {
+                        Console.WriteLine("No Releases were found");
+                    }
+                    else
+                    {
+                        url = resultingurl;
+                    }
+                    int maxprojectIndex = 0;
+
+                    if (!(GetIndex(url, '/', 6) > -1))
                     {
                         url += '/';
-                        maxprojectIndex = GetIndex(url, '/', 5);
+                        maxprojectIndex = GetIndex(url, '/', 6);
                     }
+
+                    int minprojectIndex = GetIndex(url, '/', 5);
+                    maxprojectIndex = GetIndex(url, '/', 6);
+
+
+                    // https://codeload.github.com/icebeam7/XamarinWhatsapp/zip/master
+
                     maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
 
                     string projectName = "";
                     projectName = url.Substring(minprojectIndex + 1, maxprojectIndex).ToString();
-                
-                    filePath = GetName();
+
+                    filePath = Path.GetFileName(url);
 
                     if (filePath != "")
                     {
@@ -272,15 +501,13 @@ namespace dl
                     {
                         filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                     }
+
+                    //DownloadRelease
                 }
-                else
-                {
-                    pos = url.LastIndexOf("/") + 1;
-                    filePath = url.Substring(pos, url.Length - pos).ToString();
-                    filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + filePath;
-                    
-                }
+
+                resultingurl = "";
                 masterDownload = "";
+                releasesInUrl = "";
             }
             else
             {
