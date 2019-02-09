@@ -165,10 +165,7 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension!="") ? true : false;
-            //"." + url.Substring(extPos, url.Length - extPos).ToString();
-            //string inList = null;
-            //inList = extensionList.SingleOrDefault(s => s.Equals(foundExtension));
-            //bool MatchesExtension = inList!=null;
+           
 
             if (ExtensioninURL)
             {
@@ -391,7 +388,7 @@ namespace dl
                         maxprojectIndex = GetIndex(url, '/', 5);
 
 
-                        // https://codeload.github.com/icebeam7/XamarinWhatsapp/zip/master
+                       
 
                         maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
 
@@ -431,7 +428,7 @@ namespace dl
                             maxprojectIndex = GetIndex(url, '/', 5);
 
 
-                            // https://codeload.github.com/icebeam7/XamarinWhatsapp/zip/master
+                         
 
                             maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
 
@@ -484,7 +481,7 @@ namespace dl
                     maxprojectIndex = GetIndex(url, '/', 6);
 
 
-                    // https://codeload.github.com/icebeam7/XamarinWhatsapp/zip/master
+                   
 
                     maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
 
