@@ -165,7 +165,7 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension!="") ? true : false;
-           
+            
 
             if (ExtensioninURL)
             {
@@ -258,18 +258,25 @@ namespace dl
             addurl.Replace(":owner", GetProjectName(url));
             addurl.Replace(":repo", GetRepo(url));
             githubAPI = addurl.ToString();
+
+
             Rootobject results = new Rootobject();
-            HttpClient client = new HttpClient();
 
-            client.BaseAddress = new Uri(githubAPI);
-            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36");
-            HttpResponseMessage response = client.PostAsJsonAsync(githubAPI, results).Result;
+            try
+            {
+                HttpClient client = new HttpClient();
 
-            response.EnsureSuccessStatusCode();
+                client.BaseAddress = new Uri(githubAPI);
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36");
+                HttpResponseMessage response = client.PostAsJsonAsync(githubAPI, results).Result;
 
+                response.EnsureSuccessStatusCode();
+            
             var compressedFiles = response.Content.ReadAsAsync<IEnumerable<Rootobject>>().GetAwaiter().GetResult();
 
             List<Rootobject> downloadElements = compressedFiles.ToList();
+
+           
 
             Console.WriteLine("Do you want to Download zip/tar/other files? write the option to show a list of Releases ");
 
@@ -312,9 +319,17 @@ namespace dl
                 Selection = int.Parse(Console.ReadLine());
                 return urlList[Selection - 1];
             }
-            fileTypeToShow = "";
+              fileTypeToShow = "";
 
-            return null;
+            
+            }
+            catch (Exception Ex)
+            {
+                Console.WriteLine(Ex.ToString());
+                WebException = true;
+                return null;
+            }
+            return null ;
         }
 
         public void OpenFolder()
@@ -371,11 +386,16 @@ namespace dl
                         if (resultingurl == "" || resultingurl == null)
                         {
                             Console.WriteLine("No Releases were found");
+
+                            Console.WriteLine("Downloading Master.");
+
+                            url = giturl(url);
                         }
                         else
                         {
                             url = resultingurl;
                         }
+
                         int maxprojectIndex = 0;
 
                         if (!(GetIndex(url, '/', 5) > -1))
@@ -387,9 +407,7 @@ namespace dl
                         int minprojectIndex = GetIndex(url, '/', 4);
                         maxprojectIndex = GetIndex(url, '/', 5);
 
-
-                       
-
+                        
                         maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
 
                         string projectName = "";
@@ -406,13 +424,12 @@ namespace dl
                             filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                         }
 
-                        //DownloadRelease
+                      
                     }
                     else
                     {
                         url = giturl(url);
-
-
+                        
                         if (masterDownload == "yes" || masterDownload == "y")
                         {
 
@@ -427,9 +444,7 @@ namespace dl
                             int minprojectIndex = GetIndex(url, '/', 4);
                             maxprojectIndex = GetIndex(url, '/', 5);
 
-
-                         
-
+                            
                             maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
 
                             string projectName = "";
@@ -481,7 +496,7 @@ namespace dl
                     maxprojectIndex = GetIndex(url, '/', 6);
 
 
-                   
+                    
 
                     maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
 
@@ -499,7 +514,6 @@ namespace dl
                         filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                     }
 
-                    //DownloadRelease
                 }
 
                 resultingurl = "";
@@ -565,6 +579,7 @@ namespace dl
             {
                 try
                 {
+             
                     WebRequest.DefaultWebProxy = null; 
                     client.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36");
 
