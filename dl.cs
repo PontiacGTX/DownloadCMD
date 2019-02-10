@@ -235,7 +235,7 @@ namespace dl
                 }
 
                 url = url.Substring(0, GetIndex(url, '/', 5));
-                url += "zip/master";
+                url += "/zip/master";
                 return url;
             }
             else if ((url.Contains("/blob/") && ext != "" && ((masterDownload == "yes") || masterDownload == "y")) && (masterDirIndex >= -1))
