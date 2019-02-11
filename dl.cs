@@ -33,7 +33,7 @@ namespace dl
             public string label { get; set; }
             public string content_type { get; set; }
             public string state { get; set; }
-            public int size { get; set; }
+            public long size { get; set; }
             public DateTime created_at { get; set; }
             public DateTime updated_at { get; set; }
             public string browser_download_url { get; set; }
