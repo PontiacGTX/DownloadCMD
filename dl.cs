@@ -169,7 +169,7 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension!="") ? true : false;
-            
+          
 
             if (ExtensioninURL)
             {
@@ -349,7 +349,7 @@ namespace dl
         public void DownloadFile()
         {
             string filePath = "";
-
+            url = String.Empty;
             if (firstExe && first == 0)
             {
                 String[] arguments = Environment.GetCommandLineArgs();
@@ -397,7 +397,7 @@ namespace dl
                 }
             }
 
-            if (url!="")
+            if (url == String.Empty)
             { 
                 Console.WriteLine("Enter a URL");
                 url = Console.ReadLine();
@@ -496,7 +496,6 @@ namespace dl
                                 filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                             }
 
-                            //DownloadRelease
                         }
                         else
                         {
@@ -658,7 +657,6 @@ namespace dl
 
                     client.DownloadFile(url, filePath);
                     WebException = false;
-                    url = "";
 
                 }
                 catch (WebException ex)
@@ -667,7 +665,6 @@ namespace dl
                     //    ex.InnerException.ToString();   
                     Console.WriteLine(exception);
                     WebException = true;
-                    url = "";
                 }
             }
 
