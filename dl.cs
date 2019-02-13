@@ -23,6 +23,7 @@ namespace dl
             public string tarball_url { get; set; }
             public string zipball_url { get; set; }
             public string body { get; set; }
+
         }
 
         
@@ -33,7 +34,7 @@ namespace dl
             public string label { get; set; }
             public string content_type { get; set; }
             public string state { get; set; }
-            public long size { get; set; }
+            public int size { get; set; }
             public DateTime created_at { get; set; }
             public DateTime updated_at { get; set; }
             public string browser_download_url { get; set; }
@@ -46,6 +47,9 @@ namespace dl
         static string usernftp { get; set; }
         static string userpassftp { get; set; }
         static string fpath { get; set; }
+        static int first = 0;
+        static bool firstExe = true;
+        static bool validImplicit=true;
         static string  masterDownload = "";
         static bool WebException = false;
         public static string githubAPI = "http://api.github.com/repos/:owner/:repo/releases";
@@ -165,7 +169,10 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension!="") ? true : false;
-            
+            //"." + url.Substring(extPos, url.Length - extPos).ToString();
+            //string inList = null;
+            //inList = extensionList.SingleOrDefault(s => s.Equals(foundExtension));
+            //bool MatchesExtension = inList!=null;
 
             if (ExtensioninURL)
             {
@@ -344,11 +351,60 @@ namespace dl
 
         public void DownloadFile()
         {
-
             string filePath = "";
-            Console.WriteLine("Enter a URL");
-            url = Console.ReadLine();
-            
+
+            if (firstExe && first == 0)
+            {
+                String[] arguments = Environment.GetCommandLineArgs();
+                var implicitURL = String.Join(" ", arguments);
+                bool validation1 = implicitURL.Contains("http");
+                bool validation2 = implicitURL.Contains("www");
+                if (implicitURL != "")
+                {
+                    try
+                    {
+                        if ( firstExe && first == 0 && validation1 && validation2)
+                        {
+
+                            if (implicitURL.Contains("http") || implicitURL.Contains("www"))
+                            {
+                                if ((implicitURL.Contains("http") && implicitURL.Contains("www")) || (implicitURL.Contains("http") && !implicitURL.Contains("www")))
+                                {
+                                    int start = implicitURL.IndexOf('h');
+                                    int last = implicitURL.Length;
+                                    url = implicitURL.Substring(start, last - start).ToString();
+                                }
+
+                                if (implicitURL.Contains("www") && !implicitURL.Contains("http"))
+                                {
+                                    int start = implicitURL.IndexOf('w');
+                                    int last = implicitURL.Length;
+                                    url = implicitURL.Substring(start, last - start).ToString();
+                                }
+                                validImplicit = true;
+                            }
+                            else
+                            {
+                                Console.WriteLine($" URL you enter is not valid URL:\n{url}");
+                                validImplicit = false;
+                            }
+
+                        }
+                        ++first;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.ToString());
+                        ++first;
+                    }
+                }
+            }
+
+            if (url!="")
+            { 
+                Console.WriteLine("Enter a URL");
+                url = Console.ReadLine();
+            }
            
             if (!url.Contains("http://") || !url.Contains("https://") && url.Contains("www."))
             {
@@ -375,63 +431,45 @@ namespace dl
                 string resultingurl = "";
                 if (!(releasesInUrl == "releases"))
                 {
-
+                    string projectName = "";
                     string releaseFiles = "";
-                    Console.WriteLine("Do you want to Download Latest Release? Yes/No");
-                    releaseFiles = Console.ReadLine().ToLower();
 
-                    if (releaseFiles == "yes" || releaseFiles == "yes")
+                    if (url.Contains("/blob/"))
                     {
-                        resultingurl = GetReleaseUrl();
-                        if (resultingurl == "" || resultingurl == null)
-                        {
-                            Console.WriteLine("No Releases were found");
+                        url = giturl(url);
 
-                            Console.WriteLine("Downloading Master.");
-
-                            url = giturl(url);
-                        }
-                        else
-                        {
-                            url = resultingurl;
-                        }
-
-                        int maxprojectIndex = 0;
-
-                        if (!(GetIndex(url, '/', 5) > -1))
-                        {
-                            url += '/';
-                            maxprojectIndex = GetIndex(url, '/', 5);
-                        }
-
-                        int minprojectIndex = GetIndex(url, '/', 4);
-                        maxprojectIndex = GetIndex(url, '/', 5);
-
-                        
-                        maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
-
-                        string projectName = "";
-                        projectName = url.Substring(minprojectIndex + 1, maxprojectIndex).ToString();
-
-                        filePath = filePath = Path.GetFileName(url);
+                        filePath = Path.GetFileName(url);
 
                         if (filePath != "")
                         {
-                            filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-" + filePath + ".zip";
+                            filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + GetRepo(url) + "-" + filePath;
                         }
                         else
                         {
-                            filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
+                            filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + GetRepo(url) + filePath;
                         }
-
-                      
                     }
                     else
-                    {
-                        url = giturl(url);
-                        
-                        if (masterDownload == "yes" || masterDownload == "y")
+                    { 
+
+                        Console.WriteLine("Do you want to Download Latest Release? Yes/No");
+                        releaseFiles = Console.ReadLine().ToLower();
+
+                        if (releaseFiles == "yes" || releaseFiles == "yes")
                         {
+                            resultingurl = GetReleaseUrl();
+                            if (resultingurl == "" || resultingurl == null)
+                            {
+                                Console.WriteLine("No Releases were found");
+
+                                Console.WriteLine("Downloading Master.");
+
+                                url = giturl(url);
+                            }
+                            else
+                            {
+                                url = resultingurl;
+                            }
 
                             int maxprojectIndex = 0;
 
@@ -444,13 +482,13 @@ namespace dl
                             int minprojectIndex = GetIndex(url, '/', 4);
                             maxprojectIndex = GetIndex(url, '/', 5);
 
-                            
+
                             maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
 
-                            string projectName = "";
+                           
                             projectName = url.Substring(minprojectIndex + 1, maxprojectIndex).ToString();
 
-                            filePath = GetName();
+                            filePath = Path.GetFileName(url);
 
                             if (filePath != "")
                             {
@@ -460,17 +498,55 @@ namespace dl
                             {
                                 filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                             }
+
+                            //DownloadRelease
                         }
-                        else if ((!(masterDownload == "yes") || !(masterDownload == "y")))
+                        else
                         {
-                            pos = url.LastIndexOf("/") + 1;
-                            filePath = url.Substring(pos, url.Length - pos).ToString();
-                            filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + filePath;
+                            url = giturl(url);
+
+                            if (masterDownload == "yes" || masterDownload == "y")
+                            {
+
+                                int maxprojectIndex = 0;
+
+                                if (!(GetIndex(url, '/', 5) > -1))
+                                {
+                                    url += '/';
+                                    maxprojectIndex = GetIndex(url, '/', 5);
+                                }
+
+                                int minprojectIndex = GetIndex(url, '/', 4);
+                                maxprojectIndex = GetIndex(url, '/', 5);
+
+
+                                maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
+
+                                
+                                projectName = url.Substring(minprojectIndex + 1, maxprojectIndex).ToString();
+
+                                filePath = GetName();
+
+                                if (filePath != "")
+                                {
+                                    filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-" + filePath + ".zip";
+                                }
+                                else
+                                {
+                                    filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
+                                }
+                            }
+                            else if ((!(masterDownload == "yes") || !(masterDownload == "y")))
+                            {
+                                pos = url.LastIndexOf("/") + 1;
+                                filePath = url.Substring(pos, url.Length - pos).ToString();
+                                filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + filePath;
+
+                            }
 
                         }
-
-                    } 
-                    releaseFiles = "";
+                        releaseFiles = "";
+                    }
                 }
                 else
                 {
@@ -585,6 +661,7 @@ namespace dl
 
                     client.DownloadFile(url, filePath);
                     WebException = false;
+                    url = "";
 
                 }
                 catch (WebException ex)
@@ -593,6 +670,7 @@ namespace dl
                     //    ex.InnerException.ToString();   
                     Console.WriteLine(exception);
                     WebException = true;
+                    url = "";
                 }
             }
 
@@ -611,16 +689,16 @@ namespace dl
             Console.WriteLine($"Welcome {Environment.UserName}");
             string cont = "";
 
-
+            
             while (!cont.Contains("no"))
             {
                 Download.DownloadFile();
-                
+
                 cont = Console.ReadLine();
                 WebException = false;
                 cont = cont.ToLower();
             }
-
+            
         }
     }
 }
