@@ -169,10 +169,7 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension!="") ? true : false;
-            //"." + url.Substring(extPos, url.Length - extPos).ToString();
-            //string inList = null;
-            //inList = extensionList.SingleOrDefault(s => s.Equals(foundExtension));
-            //bool MatchesExtension = inList!=null;
+            
 
             if (ExtensioninURL)
             {
