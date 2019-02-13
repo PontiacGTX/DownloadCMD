@@ -1,4 +1,4 @@
-using System;
+sing System;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
@@ -169,10 +169,7 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension!="") ? true : false;
-            //"." + url.Substring(extPos, url.Length - extPos).ToString();
-            //string inList = null;
-            //inList = extensionList.SingleOrDefault(s => s.Equals(foundExtension));
-            //bool MatchesExtension = inList!=null;
+            
 
             if (ExtensioninURL)
             {
@@ -454,7 +451,7 @@ namespace dl
                                 filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                             }
 
-                            //DownloadRelease
+                            
                         }
                         else
                         {
@@ -545,7 +542,6 @@ namespace dl
                         filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                     }
 
-                    //DownloadRelease
                 }
 
                 resultingurl = "";
@@ -646,15 +642,16 @@ namespace dl
             string cont = "";
 
             String[] arguments = Environment.GetCommandLineArgs();
-            var implicitURL = String.Join(" ", arguments);
+            var implicitURL = "";
+           implicitURL =   String.Join(" ", arguments);
             bool validation1 = implicitURL.Contains("http");
             bool validation2 = implicitURL.Contains("www");
             bool validation3 = implicitURL.Contains("ftp");
 
             if (firstExe && (validation1 || validation2 || validation3))
             {
-                
-                if (String.IsNullOrWhiteSpace(implicitURL))
+
+                if (implicitURL != "")
                 {
                     try
                     {
@@ -708,8 +705,17 @@ namespace dl
                         ++first;
                     }
                 }
+                else
+                {
+                    Console.WriteLine("\nEnter URL:");
+                    url = Console.ReadLine();
+                    Download.DownloadFile();
+                    ++first;
+                }
+
+
             }
-            else if((firstExe && !validation1 && !validation2 && !validation3) || (!firstExe && !validation1 && !validation2 && !validation3))
+            else if(firstExe && !validation1 && !validation2 && !validation3)
             {
 
                 while (!cont.Contains("no"))
