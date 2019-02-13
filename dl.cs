@@ -48,7 +48,6 @@ namespace dl
         static string userpassftp { get; set; }
         static string fpath { get; set; }
         static int first = 0;
-        static bool firstExe = first == 0;
         static bool validImplicit { get; set; }
         static string  masterDownload = "";
         static bool WebException = false;
@@ -641,7 +640,7 @@ namespace dl
             string cont = "";
 
 
-            if (firstExe )
+            if (first==0 )
             {
                 String[] arguments = Environment.GetCommandLineArgs();
                 var implicitURL = String.Join(" ", arguments);
@@ -652,7 +651,7 @@ namespace dl
                 {
                     try
                     {
-                        if (firstExe && (validation1 || validation2 || validation3))
+                        if (first==0 && (validation1 || validation2 || validation3))
                         {
 
                             if (validation1 || validation2 || validation3)
