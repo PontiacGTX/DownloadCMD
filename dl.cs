@@ -48,6 +48,7 @@ namespace dl
         static string userpassftp { get; set; }
         static string fpath { get; set; }
         static int first = 0;
+        static bool firstExe = first == 0;
         static bool validImplicit { get; set; }
         static string  masterDownload = "";
         static bool WebException = false;
@@ -168,7 +169,10 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension!="") ? true : false;
-            
+            //"." + url.Substring(extPos, url.Length - extPos).ToString();
+            //string inList = null;
+            //inList = extensionList.SingleOrDefault(s => s.Equals(foundExtension));
+            //bool MatchesExtension = inList!=null;
 
             if (ExtensioninURL)
             {
@@ -450,6 +454,7 @@ namespace dl
                                 filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                             }
 
+                            //DownloadRelease
                         }
                         else
                         {
@@ -540,6 +545,7 @@ namespace dl
                         filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                     }
 
+                    //DownloadRelease
                 }
 
                 resultingurl = "";
@@ -639,19 +645,20 @@ namespace dl
             Console.WriteLine($"Welcome {Environment.UserName}");
             string cont = "";
 
+            String[] arguments = Environment.GetCommandLineArgs();
+            var implicitURL = String.Join(" ", arguments);
+            bool validation1 = implicitURL.Contains("http");
+            bool validation2 = implicitURL.Contains("www");
+            bool validation3 = implicitURL.Contains("ftp");
 
-            if (first==0 )
+            if (firstExe && (validation1 || validation2 || validation3))
             {
-                String[] arguments = Environment.GetCommandLineArgs();
-                var implicitURL = String.Join(" ", arguments);
-                bool validation1 = implicitURL.Contains("http");
-                bool validation2 = implicitURL.Contains("www");
-                bool validation3 = implicitURL.Contains("ftp");
+                
                 if (String.IsNullOrWhiteSpace(implicitURL))
                 {
                     try
                     {
-                        if (first==0 && (validation1 || validation2 || validation3))
+                        if (firstExe && (validation1 || validation2 || validation3))
                         {
 
                             if (validation1 || validation2 || validation3)
@@ -675,6 +682,7 @@ namespace dl
                                     int last = implicitURL.Length;
                                     url = implicitURL.Substring(start, last - start).ToString();
                                 }
+
 
                                 validImplicit = true;
                             }
@@ -701,18 +709,20 @@ namespace dl
                     }
                 }
             }
-
-            while (!cont.Contains("no"))
+            else if(firstExe && !validation1 && !validation2 && !validation3)
             {
-                Download.DownloadFile();
 
-                cont = Console.ReadLine();
-                WebException = false;
-                cont = cont.ToLower();
+                while (!cont.Contains("no"))
+                {
+                    url = String.Empty;
+                    Download.DownloadFile();
+
+                    cont = Console.ReadLine();
+                    WebException = false;
+                    cont = cont.ToLower();
+                }
             }
             
         }
     }
 }
-
-
