@@ -48,8 +48,8 @@ namespace dl
         static string userpassftp { get; set; }
         static string fpath { get; set; }
         static int first = 0;
-        static bool firstExe = true;
-        static bool validImplicit=true;
+        static bool firstExe = first == 0;
+        static bool validImplicit { get; set; }
         static string  masterDownload = "";
         static bool WebException = false;
         public static string githubAPI = "http://api.github.com/repos/:owner/:repo/releases";
@@ -169,6 +169,7 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension!="") ? true : false;
+            
 
             if (ExtensioninURL)
             {
@@ -450,7 +451,6 @@ namespace dl
                                 filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                             }
 
-                            //DownloadRelease
                         }
                         else
                         {
@@ -541,7 +541,6 @@ namespace dl
                         filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                     }
 
-                    //DownloadRelease
                 }
 
                 resultingurl = "";
@@ -642,20 +641,21 @@ namespace dl
             string cont = "";
 
 
-            if (firstExe && first == 0)
+            if (firstExe )
             {
                 String[] arguments = Environment.GetCommandLineArgs();
                 var implicitURL = String.Join(" ", arguments);
                 bool validation1 = implicitURL.Contains("http");
                 bool validation2 = implicitURL.Contains("www");
+                bool validation3 = implicitURL.Contains("url");
                 if (String.IsNullOrWhiteSpace(implicitURL))
                 {
                     try
                     {
-                        if (firstExe && first == 0 && validation1 && validation2)
+                        if (firstExe && (validation1 || validation2 || validation3))
                         {
 
-                            if (implicitURL.Contains("http") || implicitURL.Contains("www"))
+                            if (validation1 || validation2 || validation3)
                             {
                                 if ((implicitURL.Contains("http") && implicitURL.Contains("www")) || (implicitURL.Contains("http") && !implicitURL.Contains("www")))
                                 {
@@ -670,11 +670,21 @@ namespace dl
                                     int last = implicitURL.Length;
                                     url = implicitURL.Substring(start, last - start).ToString();
                                 }
+
+                                if (implicitURL.Contains("ftp"))
+                                {
+                                    int start = implicitURL.IndexOf('f');
+                                    int last = implicitURL.Length;
+                                    url = implicitURL.Substring(start, last - start).ToString();
+                                }
+
                                 validImplicit = true;
                             }
                             else
                             {
                                 Console.WriteLine($" URL you enter is not valid URL:\n{url}");
+                                Console.WriteLine("\nEnter URL:");
+                                url = Console.ReadLine();
                                 validImplicit = false;
                             }
 
@@ -706,4 +716,5 @@ namespace dl
         }
     }
 }
+
 
