@@ -169,7 +169,6 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension!="") ? true : false;
-          
 
             if (ExtensioninURL)
             {
@@ -349,53 +348,8 @@ namespace dl
         public void DownloadFile()
         {
             string filePath = "";
-            url = String.Empty;
-            if (firstExe && first == 0)
-            {
-                String[] arguments = Environment.GetCommandLineArgs();
-                var implicitURL = String.Join(" ", arguments);
-                bool validation1 = implicitURL.Contains("http");
-                bool validation2 = implicitURL.Contains("www");
-                if (implicitURL != "")
-                {
-                    try
-                    {
-                        if ( firstExe && first == 0 && validation1 && validation2)
-                        {
-
-                            if (implicitURL.Contains("http") || implicitURL.Contains("www"))
-                            {
-                                if ((implicitURL.Contains("http") && implicitURL.Contains("www")) || (implicitURL.Contains("http") && !implicitURL.Contains("www")))
-                                {
-                                    int start = implicitURL.IndexOf('h');
-                                    int last = implicitURL.Length;
-                                    url = implicitURL.Substring(start, last - start).ToString();
-                                }
-
-                                if (implicitURL.Contains("www") && !implicitURL.Contains("http"))
-                                {
-                                    int start = implicitURL.IndexOf('w');
-                                    int last = implicitURL.Length;
-                                    url = implicitURL.Substring(start, last - start).ToString();
-                                }
-                                validImplicit = true;
-                            }
-                            else
-                            {
-                                Console.WriteLine($" URL you enter is not valid URL:\n{url}");
-                                validImplicit = false;
-                            }
-
-                        }
-                        ++first;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.ToString());
-                        ++first;
-                    }
-                }
-            }
+            
+            
 
             if (url == String.Empty)
             { 
@@ -496,6 +450,7 @@ namespace dl
                                 filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                             }
 
+                            //DownloadRelease
                         }
                         else
                         {
@@ -586,6 +541,7 @@ namespace dl
                         filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                     }
 
+                    //DownloadRelease
                 }
 
                 resultingurl = "";
@@ -657,7 +613,7 @@ namespace dl
 
                     client.DownloadFile(url, filePath);
                     WebException = false;
-
+                   
                 }
                 catch (WebException ex)
                 {
@@ -667,6 +623,8 @@ namespace dl
                     WebException = true;
                 }
             }
+
+            url = String.Empty;
 
             if (!WebException && File.Exists(filePath))
             {
@@ -683,7 +641,59 @@ namespace dl
             Console.WriteLine($"Welcome {Environment.UserName}");
             string cont = "";
 
-            
+
+            if (firstExe && first == 0)
+            {
+                String[] arguments = Environment.GetCommandLineArgs();
+                var implicitURL = String.Join(" ", arguments);
+                bool validation1 = implicitURL.Contains("http");
+                bool validation2 = implicitURL.Contains("www");
+                if (String.IsNullOrWhiteSpace(implicitURL))
+                {
+                    try
+                    {
+                        if (firstExe && first == 0 && validation1 && validation2)
+                        {
+
+                            if (implicitURL.Contains("http") || implicitURL.Contains("www"))
+                            {
+                                if ((implicitURL.Contains("http") && implicitURL.Contains("www")) || (implicitURL.Contains("http") && !implicitURL.Contains("www")))
+                                {
+                                    int start = implicitURL.IndexOf('h');
+                                    int last = implicitURL.Length;
+                                    url = implicitURL.Substring(start, last - start).ToString();
+                                }
+
+                                if (implicitURL.Contains("www") && !implicitURL.Contains("http"))
+                                {
+                                    int start = implicitURL.IndexOf('w');
+                                    int last = implicitURL.Length;
+                                    url = implicitURL.Substring(start, last - start).ToString();
+                                }
+                                validImplicit = true;
+                            }
+                            else
+                            {
+                                Console.WriteLine($" URL you enter is not valid URL:\n{url}");
+                                validImplicit = false;
+                            }
+
+                        }
+                        if (validImplicit)
+                        {
+                            Download.DownloadFile();
+                        }
+                        ++first;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.ToString());
+                        url = String.Empty;
+                        ++first;
+                    }
+                }
+            }
+
             while (!cont.Contains("no"))
             {
                 Download.DownloadFile();
@@ -696,3 +706,4 @@ namespace dl
         }
     }
 }
+
