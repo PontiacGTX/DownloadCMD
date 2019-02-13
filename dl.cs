@@ -709,7 +709,7 @@ namespace dl
                     }
                 }
             }
-            else if(firstExe && !validation1 && !validation2 && !validation3)
+            else if((firstExe && !validation1 && !validation2 && !validation3) || (!firstExe && !validation1 && !validation2 && !validation3))
             {
 
                 while (!cont.Contains("no"))
