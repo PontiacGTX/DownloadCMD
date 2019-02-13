@@ -646,7 +646,7 @@ namespace dl
                 var implicitURL = String.Join(" ", arguments);
                 bool validation1 = implicitURL.Contains("http");
                 bool validation2 = implicitURL.Contains("www");
-                bool validation3 = implicitURL.Contains("url");
+                bool validation3 = implicitURL.Contains("ftp");
                 if (String.IsNullOrWhiteSpace(implicitURL))
                 {
                     try
@@ -662,15 +662,14 @@ namespace dl
                                     int last = implicitURL.Length;
                                     url = implicitURL.Substring(start, last - start).ToString();
                                 }
-
-                                if (implicitURL.Contains("www") && !implicitURL.Contains("http"))
+                                else if (implicitURL.Contains("www") && !implicitURL.Contains("http"))
                                 {
                                     int start = implicitURL.IndexOf('w');
                                     int last = implicitURL.Length;
                                     url = implicitURL.Substring(start, last - start).ToString();
                                 }
 
-                                if (implicitURL.Contains("ftp"))
+                                if (validation3)
                                 {
                                     int start = implicitURL.IndexOf('f');
                                     int last = implicitURL.Length;
