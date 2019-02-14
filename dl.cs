@@ -1,4 +1,4 @@
-sing System;
+using System;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
@@ -10,14 +10,228 @@ using System.IO;
 using System.Threading;
 using System.Net.Http.Formatting;
 using System.Net.Http;
+using Newtonsoft.Json;
+
+
 
 namespace dl
 {
     partial class Program
     {
+
+        #region reddit
+
+        public class RRootobject
+        {
+            public string kind { get; set; }
+            public Data data { get; set; }
+        }
+
+        public class Data
+        {
+            public string modhash { get; set; }
+            public int dist { get; set; }
+            public Product[] children { get; set; }
+            public object after { get; set; }
+            public object before { get; set; }
+        }
+
+        public class Product
+        {
+            public string kind { get; set; }
+            public Data1 data { get; set; }
+        }
+
+        public class Data1
+        {
+            public object approved_at_utc { get; set; }
+            public string subreddit { get; set; }
+            public string selftext { get; set; }
+            public object[] user_reports { get; set; }
+            public bool saved { get; set; }
+            public object mod_reason_title { get; set; }
+            public int gilded { get; set; }
+            public bool clicked { get; set; }
+            public string title { get; set; }
+            public object[] link_flair_richtext { get; set; }
+            public string subreddit_name_prefixed { get; set; }
+            public bool hidden { get; set; }
+            public int pwls { get; set; }
+            public object link_flair_css_class { get; set; }
+            public int downs { get; set; }
+            public int thumbnail_height { get; set; }
+            public string parent_whitelist_status { get; set; }
+            public bool hide_score { get; set; }
+            public string name { get; set; }
+            public bool quarantine { get; set; }
+            public string link_flair_text_color { get; set; }
+            public float upvote_ratio { get; set; }
+            public object author_flair_background_color { get; set; }
+            public string subreddit_type { get; set; }
+            public int ups { get; set; }
+            public string domain { get; set; }
+            public Media_Embed media_embed { get; set; }
+            public int thumbnail_width { get; set; }
+            public object author_flair_template_id { get; set; }
+            public bool is_original_content { get; set; }
+            public string author_fullname { get; set; }
+            public Secure_Media secure_media { get; set; }
+            public bool is_reddit_media_domain { get; set; }
+            public bool is_meta { get; set; }
+            public object category { get; set; }
+            public Secure_Media_Embed secure_media_embed { get; set; }
+            public object link_flair_text { get; set; }
+            public bool can_mod_post { get; set; }
+            public int score { get; set; }
+            public object approved_by { get; set; }
+            public string thumbnail { get; set; }
+            public bool edited { get; set; }
+            public object author_flair_css_class { get; set; }
+            public object[] author_flair_richtext { get; set; }
+            public Gildings gildings { get; set; }
+            public string post_hint { get; set; }
+            public object content_categories { get; set; }
+            public bool is_self { get; set; }
+            public object mod_note { get; set; }
+            public float created { get; set; }
+            public string link_flair_type { get; set; }
+            public int wls { get; set; }
+            public object banned_by { get; set; }
+            public string author_flair_type { get; set; }
+            public bool contest_mode { get; set; }
+            public object selftext_html { get; set; }
+            public object likes { get; set; }
+            public object suggested_sort { get; set; }
+            public object banned_at_utc { get; set; }
+            public object view_count { get; set; }
+            public bool archived { get; set; }
+            public bool no_follow { get; set; }
+            public bool is_crosspostable { get; set; }
+            public bool pinned { get; set; }
+            public bool over_18 { get; set; }
+            public Preview preview { get; set; }
+            public Media media { get; set; }
+            public bool media_only { get; set; }
+            public object link_flair_template_id { get; set; }
+            public bool can_gild { get; set; }
+            public bool spoiler { get; set; }
+            public bool locked { get; set; }
+            public object author_flair_text { get; set; }
+            public bool visited { get; set; }
+            public object num_reports { get; set; }
+            public object distinguished { get; set; }
+            public string subreddit_id { get; set; }
+            public object mod_reason_by { get; set; }
+            public object removal_reason { get; set; }
+            public string link_flair_background_color { get; set; }
+            public string id { get; set; }
+            public bool is_robot_indexable { get; set; }
+            public object report_reasons { get; set; }
+            public string author { get; set; }
+            public int num_crossposts { get; set; }
+            public int num_comments { get; set; }
+            public bool send_replies { get; set; }
+            public bool author_patreon_flair { get; set; }
+            public object author_flair_text_color { get; set; }
+            public string permalink { get; set; }
+            public string whitelist_status { get; set; }
+            public bool stickied { get; set; }
+            public string url { get; set; }
+            public int subreddit_subscribers { get; set; }
+            public float created_utc { get; set; }
+            public object[] mod_reports { get; set; }
+            public bool is_video { get; set; }
+        }
+
+        public class Media_Embed
+        {
+        }
+
+        public class Secure_Media
+        {
+            public Reddit_Video reddit_video { get; set; }
+        }
+
+        public class Reddit_Video
+        {
+            public string fallback_url { get; set; }
+            public int height { get; set; }
+            public int width { get; set; }
+            public string scrubber_media_url { get; set; }
+            public string dash_url { get; set; }
+            public int duration { get; set; }
+            public string hls_url { get; set; }
+            public bool is_gif { get; set; }
+            public string transcoding_status { get; set; }
+        }
+
+        public class Secure_Media_Embed
+        {
+        }
+
+        public class Gildings
+        {
+            public int gid_1 { get; set; }
+            public int gid_2 { get; set; }
+            public int gid_3 { get; set; }
+        }
+
+        public class Preview
+        {
+            public Image[] images { get; set; }
+            public bool enabled { get; set; }
+        }
+
+        public class Image
+        {
+            public Source source { get; set; }
+            public Resolution[] resolutions { get; set; }
+            public Variants variants { get; set; }
+            public string id { get; set; }
+        }
+
+        public class Source
+        {
+            public string url { get; set; }
+            public int width { get; set; }
+            public int height { get; set; }
+        }
+
+        public class Variants
+        {
+        }
+
+        public class Resolution
+        {
+            public string url { get; set; }
+            public int width { get; set; }
+            public int height { get; set; }
+        }
+
+        public class Media
+        {
+            public Reddit_Video1 reddit_video { get; set; }
+        }
+
+        public class Reddit_Video1
+        {
+            public string fallback_url { get; set; }
+            public int height { get; set; }
+            public int width { get; set; }
+            public string scrubber_media_url { get; set; }
+            public string dash_url { get; set; }
+            public int duration { get; set; }
+            public string hls_url { get; set; }
+            public bool is_gif { get; set; }
+            public string transcoding_status { get; set; }
+        }
+
+        #endregion reddit
+
+        #region github
         public class Rootobject
         {
-           
+
             public string name { get; set; }
             public Asset[] assets { get; set; }
             public string tarball_url { get; set; }
@@ -26,7 +240,7 @@ namespace dl
 
         }
 
-        
+
 
         public class Asset
         {
@@ -40,6 +254,8 @@ namespace dl
             public string browser_download_url { get; set; }
         }
 
+        #endregion github
+
 
         WebClient client = new WebClient();
         public int count = 0;
@@ -50,13 +266,13 @@ namespace dl
         static int first = 0;
         static bool firstExe = first == 0;
         static bool validImplicit { get; set; }
-        static string  masterDownload = "";
+        static string masterDownload = "";
         static bool WebException = false;
         public static string githubAPI = "http://api.github.com/repos/:owner/:repo/releases";
 
         readonly List<string> programmingLangEx = new List<string>() { ".c", ".cc", ".class", ".clj", ".cpp", ".cs", ".cxx", ".el", ".go", ".h", ".java", ".lua", ".m", ".h", ".m4", ".php", ".pas", ".po", ".py", ".rb", ".rs", ".sh", ".sh", ".swift", ".vb", ".vcxproj", ".xcodeproj", ".xml", ".diff", ".patch", ".exe" };
 
-        
+
         public string Rename(string path)
         {
             string tmpname = Path.GetFileName(path);
@@ -84,7 +300,7 @@ namespace dl
 
             return name;
         }
-        
+
 
         public void DownloadFTP(string path)
         {
@@ -156,7 +372,7 @@ namespace dl
         {
             int pos = GetIndex(url, '/', 4) + 1;
 
-            int last = (GetIndex(url, '/', 5) > -1) ? (GetIndex(url, '/', 5) ) : url.Length;
+            int last = (GetIndex(url, '/', 5) > -1) ? (GetIndex(url, '/', 5)) : url.Length;
 
             string repo = url.Substring(pos, last - pos);
             return repo;
@@ -168,12 +384,15 @@ namespace dl
             int extPos = url.LastIndexOf(".") + 1;
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
-            bool ExtensioninURL = (foundExtension!="") ? true : false;
-            
+            bool ExtensioninURL = (foundExtension != "") ? true : false;
+            //"." + url.Substring(extPos, url.Length - extPos).ToString();
+            //string inList = null;
+            //inList = extensionList.SingleOrDefault(s => s.Equals(foundExtension));
+            //bool MatchesExtension = inList!=null;
 
             if (ExtensioninURL)
             {
-               return foundExtension;
+                return foundExtension;
             }
 
             return "";
@@ -191,7 +410,7 @@ namespace dl
         {
             return mimeList.Select((value, index) => new { value, Index = index }).Where(x => x.value.Equals(Path.GetFileName(result.Headers["Content-Type"]))).Select(x => x.Index).ToList();
         }
-        
+
         public string giturl(string url)
         {
             string ext = "";
@@ -201,14 +420,14 @@ namespace dl
             string urlFileName = url.Substring(url.LastIndexOf("/") + 1, url.Length - (url.LastIndexOf("/") + 1));
 
             StringBuilder AddtoURL = new StringBuilder(url);
-            
+
             int masterDirIndex = 0;
             Console.WriteLine("Download Master? ");
             masterDownload = Console.ReadLine().ToLower();
 
             masterDirIndex = GetIndex(url, '/', 5);
             bool isCompleted = masterDirIndex > -1;
-            if (!isCompleted && (masterDownload=="yes" || masterDownload=="y"))
+            if (!isCompleted && (masterDownload == "yes" || masterDownload == "y"))
             {
                 url += '/';
                 masterDirIndex = GetIndex(url, '/', 5);
@@ -247,11 +466,11 @@ namespace dl
                 url = AddtoURL.Replace("github.com", "codeload.github.com").ToString();
 
                 url = url.Substring(0, GetIndex(url, '/', 5));
-                
+
                 url += "/zip/master";
                 return url;
-                
-                
+
+
             }
 
             return url;
@@ -275,57 +494,57 @@ namespace dl
                 HttpResponseMessage response = client.PostAsJsonAsync(githubAPI, results).Result;
 
                 response.EnsureSuccessStatusCode();
-            
-            var compressedFiles = response.Content.ReadAsAsync<IEnumerable<Rootobject>>().GetAwaiter().GetResult();
 
-            List<Rootobject> downloadElements = compressedFiles.ToList();
+                var compressedFiles = response.Content.ReadAsAsync<IEnumerable<Rootobject>>().GetAwaiter().GetResult();
 
-           
+                List<Rootobject> downloadElements = compressedFiles.ToList();
 
-            Console.WriteLine("Do you want to Download zip/tar/other files? write the option to show a list of Releases ");
 
-            string fileTypeToShow = Console.ReadLine().ToLower();
 
-            Console.WriteLine($"Description:  {downloadElements[0].body}  \n\nSelect one Option:");
-            int Selection = -1;
-            if (fileTypeToShow == "zip")
-            {
-                for (int i = 0; i < downloadElements.Count; i++)
+                Console.WriteLine("Do you want to Download zip/tar/other files? write the option to show a list of Releases ");
+
+                string fileTypeToShow = Console.ReadLine().ToLower();
+
+                Console.WriteLine($"Description:  {downloadElements[0].body}  \n\nSelect one Option:");
+                int Selection = -1;
+                if (fileTypeToShow == "zip")
                 {
-                    Console.WriteLine($"{i + 1}) {GetRepo(url)}-{Path.GetFileName(downloadElements[i].zipball_url)}.zip");
-                }
-                Console.WriteLine("Select Number: ");
-                Selection = int.Parse(Console.ReadLine());
-             return  downloadElements[Selection - 1].zipball_url;
-            }
-            else if (fileTypeToShow == "tar")
-            {
-                for (int i = 0; i < downloadElements.Count; i++)
-                {
-                    Console.WriteLine($"{i + 1}) {GetRepo(url)}-{Path.GetFileName(downloadElements[i].tarball_url)}.tar");
-                }
-                Console.WriteLine("Select Number: ");
-                Selection = int.Parse(Console.ReadLine());
-            return downloadElements[Selection - 1].tarball_url;
-            }
-            else if (fileTypeToShow == "other")
-            {
-                List<string> urlList = new List<string>();
-                for (int i = 0; i < downloadElements.Count; i++)
-                {
-                    foreach (Asset File in downloadElements[i].assets)
+                    for (int i = 0; i < downloadElements.Count; i++)
                     {
-                        Console.WriteLine($"{i + 1}) {Path.GetFileName(File.browser_download_url)}       {File.size / 1048576} MB");
-                        urlList.Add(File.browser_download_url);
+                        Console.WriteLine($"{i + 1}) {GetRepo(url)}-{Path.GetFileName(downloadElements[i].zipball_url)}.zip");
                     }
+                    Console.WriteLine("Select Number: ");
+                    Selection = int.Parse(Console.ReadLine());
+                    return downloadElements[Selection - 1].zipball_url;
                 }
-                Console.WriteLine("Select Number: ");
-                Selection = int.Parse(Console.ReadLine());
-                return urlList[Selection - 1];
-            }
-              fileTypeToShow = "";
+                else if (fileTypeToShow == "tar")
+                {
+                    for (int i = 0; i < downloadElements.Count; i++)
+                    {
+                        Console.WriteLine($"{i + 1}) {GetRepo(url)}-{Path.GetFileName(downloadElements[i].tarball_url)}.tar");
+                    }
+                    Console.WriteLine("Select Number: ");
+                    Selection = int.Parse(Console.ReadLine());
+                    return downloadElements[Selection - 1].tarball_url;
+                }
+                else if (fileTypeToShow == "other")
+                {
+                    List<string> urlList = new List<string>();
+                    for (int i = 0; i < downloadElements.Count; i++)
+                    {
+                        foreach (Asset File in downloadElements[i].assets)
+                        {
+                            Console.WriteLine($"{i + 1}) {Path.GetFileName(File.browser_download_url)}       {File.size / 1048576} MB");
+                            urlList.Add(File.browser_download_url);
+                        }
+                    }
+                    Console.WriteLine("Select Number: ");
+                    Selection = int.Parse(Console.ReadLine());
+                    return urlList[Selection - 1];
+                }
+                fileTypeToShow = "";
 
-            
+
             }
             catch (Exception Ex)
             {
@@ -333,31 +552,31 @@ namespace dl
                 WebException = true;
                 return null;
             }
-            return null ;
+            return null;
         }
 
         public void OpenFolder()
         {
-           
-                Console.WriteLine($"\nYour file has been saved: {fpath}"); string opn = "";
-                Console.WriteLine("Open File Directory?"); opn = Console.ReadLine();
-                string selectedFile = "/select, \"" + fpath + "\"";
-                if (opn.Contains("y") || opn.Contains("yes")) Process.Start("explorer.exe", selectedFile);
-                WebException = false;
+
+            Console.WriteLine($"\nYour file has been saved: {fpath}"); string opn = "";
+            Console.WriteLine("Open File Directory?"); opn = Console.ReadLine();
+            string selectedFile = "/select, \"" + fpath + "\"";
+            if (opn.Contains("y") || opn.Contains("yes")) Process.Start("explorer.exe", selectedFile);
+            WebException = false;
         }
 
         public void DownloadFile()
         {
             string filePath = "";
-            
-            
+
+
 
             if (url == String.Empty)
-            { 
+            {
                 Console.WriteLine("Enter a URL");
                 url = Console.ReadLine();
             }
-           
+
             if (!url.Contains("http://") || !url.Contains("https://") && url.Contains("www."))
             {
                 StringBuilder Addinurl = new StringBuilder(url);
@@ -372,7 +591,7 @@ namespace dl
                 url = Console.ReadLine();
             }
 
-           
+
             int pos = 0;
 
             if (url.Contains("github"))
@@ -402,7 +621,7 @@ namespace dl
                         }
                     }
                     else
-                    { 
+                    {
 
                         Console.WriteLine("Do you want to Download Latest Release? Yes/No");
                         releaseFiles = Console.ReadLine().ToLower();
@@ -437,7 +656,7 @@ namespace dl
 
                             maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
 
-                           
+
                             projectName = url.Substring(minprojectIndex + 1, maxprojectIndex).ToString();
 
                             filePath = Path.GetFileName(url);
@@ -451,7 +670,7 @@ namespace dl
                                 filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                             }
 
-                            
+                            //DownloadRelease
                         }
                         else
                         {
@@ -474,7 +693,7 @@ namespace dl
 
                                 maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
 
-                                
+
                                 projectName = url.Substring(minprojectIndex + 1, maxprojectIndex).ToString();
 
                                 filePath = GetName();
@@ -524,7 +743,7 @@ namespace dl
                     maxprojectIndex = GetIndex(url, '/', 6);
 
 
-                    
+
 
                     maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
 
@@ -542,11 +761,126 @@ namespace dl
                         filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                     }
 
+                    //DownloadRelease
                 }
 
                 resultingurl = "";
                 masterDownload = "";
                 releasesInUrl = "";
+            }
+            else if (url.Contains("reddit"))
+            {
+                var jsonurl = url;
+
+                if (GetIndex(jsonurl, '/', 8) == -1)
+                {
+                    jsonurl += "/.json";
+                }
+                else
+                {
+                    jsonurl += ".json";
+                }
+
+                var redditJsonpath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\redditfile.json";
+                client.DownloadFile(jsonurl, redditJsonpath);
+                var jsonString = File.ReadAllText(redditJsonpath);
+
+                var deserializedStr = JsonConvert.DeserializeObject<IList<RRootobject>>(jsonString);
+
+                List<RRootobject> foundElements = deserializedStr.ToList();
+
+                Product dataObject = new Product();
+                dataObject.data.secure_media.reddit_video.fallback_url = "";
+
+                
+                    foreach (Product _object in foundElements[0].data.children)
+                    {
+                        dataObject.data.secure_media.reddit_video.fallback_url = _object.data.secure_media.reddit_video.fallback_url + "/";
+                        dataObject.data.url = _object.data.url + "/";
+                        dataObject.data.is_video = _object.data.is_video;
+                        
+                    }
+               
+                   if (dataObject.data.secure_media.reddit_video.fallback_url!="")
+                   {
+                        var mediaURL = dataObject.data.secure_media.reddit_video.fallback_url;
+
+                        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(mediaURL);
+                        request.Method = WebRequestMethods.Http.Get;
+                        HttpWebResponse result = (HttpWebResponse)request.GetResponse();
+                   
+
+
+                        var first = GetIndex(url, '/', 7);
+                        var last = (GetIndex(url, '/', 8) > -1) ? (GetIndex(url, '/', 8)) : url.Length;
+
+                        var mediaPath = "";
+
+
+                        List<int> extensionPos = FindExtensionPos(result);
+                        bool hasMIMEtype = extensionPos.Any();
+
+
+                        if (dataObject.data.is_video==true)
+                        {
+                            if (extensionPos.Count > 1)
+                            {
+                                ShowElements(extensionPos);
+                                Console.WriteLine("Select the extension of the video");
+                                int position = int.Parse(Console.ReadLine());
+                                mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + url.Substring(first, last - first).ToString() + extensionList[position];
+                            }
+                            else if (extensionPos.Count == 1)
+                            {
+                                mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + url.Substring(first, last - first).ToString() + extensionList[extensionPos[0]];
+                            }
+                            else
+                            {
+                                mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + url.Substring(first, last - first).ToString() + ".mp4";
+                            }
+                            Console.WriteLine("Downloading Video");
+                            client.DownloadFile(mediaURL, mediaPath);
+
+
+
+                            StringBuilder addtourl = new StringBuilder(mediaURL);
+                            int start = GetIndex(mediaURL, '/', 4) + 1;
+                            int end = GetIndex(mediaURL, '?', 1);
+
+                            var audioURL = addtourl.Replace(mediaURL.Substring(start, end - start).ToString(), "audio").ToString();
+                            Console.WriteLine("Downloading Audio");
+                            var audioPath = "";
+                            audioPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + url.Substring(first, last - first).ToString() + ".mp4";
+                            client.DownloadFile(audioURL, audioPath);
+                        }
+                        else
+                        {
+
+
+                            url = dataObject.data.url;
+
+                            var imagefirst = GetIndex(url, '/', 7);
+                            var imagelast = (GetIndex(url, '/', 8) > -1) ? (GetIndex(url, '/', 8)) : url.Length;
+
+                            filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + url.Substring(imagefirst, imagelast - imagefirst).ToString() + GetExt();
+
+                            //other format gif/image
+                        }
+
+
+                    }
+                    else
+                    {
+                        url = dataObject.data.url;
+                    
+                        var imagefirst = GetIndex(url, '/', 7);
+                        var imagelast = (GetIndex(url, '/', 8) > -1) ? (GetIndex(url, '/', 8)) : url.Length;
+
+                        filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + url.Substring(imagefirst, imagelast - imagefirst).ToString() + GetExt();
+
+
+                    }
+
             }
             else
             {
@@ -574,24 +908,24 @@ namespace dl
                         Console.WriteLine("Enter the number which extension belongs to the file:");
                         posList = int.Parse(Console.ReadLine());
                     }
-                    else if (indexes.Count==1)
+                    else if (indexes.Count == 1)
                     {
                         posList = indexes[0];
                     }
-                    filePath = GetName() + extensionList[posList];                    
-                    filePath = "C:\\Users\\" + Environment.UserName.ToString()  + "\\Downloads" + "\\" + filePath;
+                    filePath = GetName() + extensionList[posList];
+                    filePath = "C:\\Users\\" + Environment.UserName.ToString() + "\\Downloads" + "\\" + filePath;
                     indexes.Clear();
                 }
-                else if (hasMIMEtype && ext!="")
+                else if (hasMIMEtype && ext != "")
                 {
                     filePath = GetName();
                     filePath = "C:\\Users\\" + Environment.UserName.ToString() + "\\Downloads" + "\\" + filePath;
                 }
-                
+
                 hasMIMEtype = false;
                 ext = "";
             }
-            
+
             if (File.Exists(filePath))
             {
                 filePath = Rename(filePath);
@@ -607,13 +941,13 @@ namespace dl
             {
                 try
                 {
-             
-                    WebRequest.DefaultWebProxy = null; 
+
+                    WebRequest.DefaultWebProxy = null;
                     client.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36");
 
                     client.DownloadFile(url, filePath);
                     WebException = false;
-                   
+
                 }
                 catch (WebException ex)
                 {
@@ -634,7 +968,7 @@ namespace dl
             Console.WriteLine("Do you want to download another file?");
 
         }
-        
+
         public static void Main(string[] args)
         {
             Program Download = new Program();
@@ -643,7 +977,7 @@ namespace dl
 
             String[] arguments = Environment.GetCommandLineArgs();
             var implicitURL = "";
-           implicitURL =   String.Join(" ", arguments);
+            implicitURL = String.Join(" ", arguments);
             bool validation1 = implicitURL.Contains("http");
             bool validation2 = implicitURL.Contains("www");
             bool validation3 = implicitURL.Contains("ftp");
@@ -715,7 +1049,7 @@ namespace dl
 
 
             }
-            else if(firstExe && !validation1 && !validation2 && !validation3)
+            else if (firstExe && !validation1 && !validation2 && !validation3)
             {
 
                 while (!cont.Contains("no"))
@@ -728,7 +1062,7 @@ namespace dl
                     cont = cont.ToLower();
                 }
             }
-            
+
         }
     }
 }
