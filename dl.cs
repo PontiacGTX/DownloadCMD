@@ -52,6 +52,7 @@ namespace dl
             public string post_hint { get; set; }
             public object content_categories { get; set; }
             public bool is_self { get; set; }
+           // public Preview preview { get; set; }
             public Media media { get; set; }
             public bool media_only { get; set; }
             public object report_reasons { get; set; }
@@ -77,6 +78,12 @@ namespace dl
             public string transcoding_status { get; set; }
         }
 
+        
+        //public class Preview
+        //{
+        //    public Image[] images { get; set; }
+        //    public bool enabled { get; set; }
+        //}
 
         public class Image
         {
@@ -150,6 +157,134 @@ namespace dl
 
         #endregion github
 
+        #region imgur
+
+        public class ImgrRootobject
+        {
+            public ImgrData data { get; set; }
+            public bool success { get; set; }
+            public int status { get; set; }
+        }
+
+        public class ImgrData
+        {
+            public string id { get; set; }
+            public string title { get; set; }
+            public object description { get; set; }
+            public int datetime { get; set; }
+            public string cover { get; set; }
+            public int cover_width { get; set; }
+            public int cover_height { get; set; }
+            public string account_url { get; set; }
+            public int account_id { get; set; }
+            public string privacy { get; set; }
+            public string layout { get; set; }
+            public int views { get; set; }
+            public string link { get; set; }
+            public int ups { get; set; }
+            public int downs { get; set; }
+            public int points { get; set; }
+            public int score { get; set; }
+            public bool is_album { get; set; }
+            public object vote { get; set; }
+            public bool favorite { get; set; }
+            public bool nsfw { get; set; }
+            public string section { get; set; }
+            public int comment_count { get; set; }
+            public int favorite_count { get; set; }
+            public string topic { get; set; }
+            public int topic_id { get; set; }
+            public int images_count { get; set; }
+            public bool in_gallery { get; set; }
+            public bool is_ad { get; set; }
+            public ImgrTag[] tags { get; set; }
+            public int ad_type { get; set; }
+            public string ad_url { get; set; }
+            public bool in_most_viral { get; set; }
+            public bool include_album_ads { get; set; }
+            public ImgrImage[] images { get; set; }
+            public ImgrAd_Config ad_config { get; set; }
+        }
+
+        public class ImgrAd_Config
+        {
+            public string[] safeFlags { get; set; }
+            public object[] highRiskFlags { get; set; }
+            public object[] unsafeFlags { get; set; }
+            public bool showsAds { get; set; }
+        }
+
+        public class ImgrTag
+        {
+            public string name { get; set; }
+            public string display_name { get; set; }
+            public int followers { get; set; }
+            public int total_items { get; set; }
+            public bool following { get; set; }
+            public string background_hash { get; set; }
+            public object thumbnail_hash { get; set; }
+            public string accent { get; set; }
+            public bool background_is_animated { get; set; }
+            public bool thumbnail_is_animated { get; set; }
+            public bool is_promoted { get; set; }
+            public string description { get; set; }
+            public object logo_hash { get; set; }
+            public object logo_destination_url { get; set; }
+            public ImgrDescription_Annotations description_annotations { get; set; }
+        }
+
+        public class ImgrDescription_Annotations
+        {
+        }
+
+        public class ImgrImage
+        {
+            public string id { get; set; }
+            public object title { get; set; }
+            public object description { get; set; }
+            public int datetime { get; set; }
+            public string type { get; set; }
+            public bool animated { get; set; }
+            public int width { get; set; }
+            public int height { get; set; }
+            public int size { get; set; }
+            public int views { get; set; }
+            public long bandwidth { get; set; }
+            public object vote { get; set; }
+            public bool favorite { get; set; }
+            public object nsfw { get; set; }
+            public object section { get; set; }
+            public object account_url { get; set; }
+            public object account_id { get; set; }
+            public bool is_ad { get; set; }
+            public bool in_most_viral { get; set; }
+            public bool has_sound { get; set; }
+            public object[] tags { get; set; }
+            public int ad_type { get; set; }
+            public string ad_url { get; set; }
+            public bool in_gallery { get; set; }
+            public string link { get; set; }
+            public int mp4_size { get; set; }
+            public string mp4 { get; set; }
+            public string gifv { get; set; }
+            public string hls { get; set; }
+            public Processing processing { get; set; }
+            public object comment_count { get; set; }
+            public object favorite_count { get; set; }
+            public object ups { get; set; }
+            public object downs { get; set; }
+            public object points { get; set; }
+            public object score { get; set; }
+
+        }
+
+        public class Processing
+        {
+            public string status { get; set; }
+        }
+
+
+        #endregion imgur
 
         WebClient client = new WebClient();
         public int count = 0;
@@ -686,27 +821,29 @@ namespace dl
                 Product dataObject = new Product();
                 dataObject.data.secure_media.reddit_video.fallback_url = "";
 
-                
-                    foreach (Product _object in foundElements[0].data.children)
+
+                foreach (Product _object in foundElements[0].data.children)
+                {
+                    dataObject.data.secure_media.reddit_video.fallback_url = _object.data.secure_media.reddit_video.fallback_url + "/";
+                    dataObject.data.url = _object.data.url + "/";
+                    dataObject.data.is_video = _object.data.is_video;
+
+                }
+
+                if (dataObject.data.is_video)
+                {
+                    if (dataObject.data.secure_media.reddit_video.fallback_url != "")
                     {
-                        dataObject.data.secure_media.reddit_video.fallback_url = _object.data.secure_media.reddit_video.fallback_url + "/";
-                        dataObject.data.url = _object.data.url + "/";
-                        dataObject.data.is_video = _object.data.is_video;
-                        
-                    }
-               
-                   if (dataObject.data.secure_media.reddit_video.fallback_url!="")
-                   {
                         var mediaURL = dataObject.data.secure_media.reddit_video.fallback_url;
 
                         HttpWebRequest request = (HttpWebRequest)WebRequest.Create(mediaURL);
                         request.Method = WebRequestMethods.Http.Get;
                         HttpWebResponse result = (HttpWebResponse)request.GetResponse();
-                   
 
 
-                        var first = GetIndex(url, '/', 7);
-                        var last = (GetIndex(url, '/', 8) > -1) ? (GetIndex(url, '/', 8)) : url.Length;
+
+                        //var first = GetIndex(url, '/', 7);
+                        //var last = (GetIndex(url, '/', 8) > -1) ? (GetIndex(url, '/', 8)) : url.Length;
 
                         var mediaPath = "";
 
@@ -715,66 +852,167 @@ namespace dl
                         bool hasMIMEtype = extensionPos.Any();
 
 
-                        if (dataObject.data.is_video==true)
+                        if (extensionPos.Count > 1)
                         {
-                            if (extensionPos.Count > 1)
-                            {
-                                ShowElements(extensionPos);
-                                Console.WriteLine("Select the extension of the video");
-                                int position = int.Parse(Console.ReadLine());
-                                mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + url.Substring(first, last - first).ToString() + extensionList[position];
-                            }
-                            else if (extensionPos.Count == 1)
-                            {
-                                mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + url.Substring(first, last - first).ToString() + extensionList[extensionPos[0]];
-                            }
-                            else
-                            {
-                                mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + url.Substring(first, last - first).ToString() + ".mp4";
-                            }
-                            Console.WriteLine("Downloading Video");
-                            client.DownloadFile(mediaURL, mediaPath);
-
-
-
-                            StringBuilder addtourl = new StringBuilder(mediaURL);
-                            int start = GetIndex(mediaURL, '/', 4) + 1;
-                            int end = GetIndex(mediaURL, '?', 1);
-
-                            var audioURL = addtourl.Replace(mediaURL.Substring(start, end - start).ToString(), "audio").ToString();
-                            Console.WriteLine("Downloading Audio");
-                            var audioPath = "";
-                            audioPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + url.Substring(first, last - first).ToString() + ".mp4";
-                            client.DownloadFile(audioURL, audioPath);
+                            ShowElements(extensionPos);
+                            Console.WriteLine("Select the extension of the video");
+                            int position = int.Parse(Console.ReadLine());
+                            mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + dataObject.data.title + extensionList[position - 1];
+                        }
+                        else if (extensionPos.Count == 1)
+                        {
+                            mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + dataObject.data.title + extensionList[extensionPos[0]];
                         }
                         else
                         {
-
-
-                            url = dataObject.data.url;
-
-                            var imagefirst = GetIndex(url, '/', 7);
-                            var imagelast = (GetIndex(url, '/', 8) > -1) ? (GetIndex(url, '/', 8)) : url.Length;
-
-                            filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + url.Substring(imagefirst, imagelast - imagefirst).ToString() + GetExt();
-
-                            //other format gif/image
+                            mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + dataObject.data.title + ".mp4";
                         }
 
+                        Console.WriteLine("Downloading Video");
+                        client.DownloadFile(mediaURL, mediaPath);
+
+                        Console.WriteLine("Video Downloaded");
+
+                        StringBuilder addtourl = new StringBuilder(mediaURL);
+                        int start = GetIndex(mediaURL, '/', 4) + 1;
+                        int end = GetIndex(mediaURL, '?', 1);
+
+                        var audioURL = addtourl.Replace(mediaURL.Substring(start, end - start).ToString(), "audio").ToString();
+                        Console.WriteLine("Downloading Audio");
+                        var audioPath = "";
+                        audioPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + dataObject.data.title + ".mp4";
+                        client.DownloadFile(audioURL, audioPath);
+
+                        Console.WriteLine("Audio Downloaded\n");
+
+
+                        Console.WriteLine("Joining Video and Audio Sources...");
+
+
+
+
+
+                    }
+
+                }
+                else
+                {
+
+                    //var imagefirst = GetIndex(url, '/', 7);
+                    //var imagelast = (GetIndex(url, '/', 8) > -1) ? (GetIndex(url, '/', 8)) : url.Length;
+
+                    if (dataObject.data.media.reddit_video.is_gif)
+                    {
+                        url = dataObject.data.media.reddit_video.fallback_url;
+                        filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + dataObject.data.title + ".gif";
 
                     }
                     else
                     {
                         url = dataObject.data.url;
-                    
-                        var imagefirst = GetIndex(url, '/', 7);
-                        var imagelast = (GetIndex(url, '/', 8) > -1) ? (GetIndex(url, '/', 8)) : url.Length;
-
-                        filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + url.Substring(imagefirst, imagelast - imagefirst).ToString() + GetExt();
-
+                        filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + dataObject.data.title + GetExt();
 
                     }
 
+                    //other format gif/image
+                }
+
+            }
+            else if (url.Contains("imgur"))
+            {
+                int start = 0;
+                int end = 0;
+                if (url.LastIndexOf('/') == 5)
+                {
+                    start = GetIndex(url, '/', 5);
+                    end = GetIndex(url, '/', 6) > -1 ? GetIndex(url, '/', 6) : url.Length;
+                }
+                if (url.LastIndexOf('/') == 4)
+                {
+                    start = GetIndex(url, '/', 4);
+                    end = GetIndex(url, '/', 5) > -1 ? GetIndex(url, '/', 5) : url.Length;
+                }
+                start = url.LastIndexOf('/');
+                end = GetIndex(url, '/', start + 1) > -1 ? GetIndex(url, '/', start + 1) : url.Length;
+
+                var imgID = url.Substring(start, end - start);
+                var imgurAPI = "https://api.imgur.com/3/gallery/id/";
+                StringBuilder addtourl = new StringBuilder(imgurAPI);
+                url = addtourl.Replace("/id/", imgID).ToString();
+                Console.WriteLine(url);
+
+
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                request.Headers.Add("Authorization", "Client-ID eefdff21d10f81b");
+                request.Timeout = 5000;
+                request.Method = WebRequestMethods.Http.Get;
+                var response = request.GetResponse().GetResponseStream();
+                StreamReader rd = new StreamReader(response);
+                var responseStr = rd.ReadToEnd();
+                Console.WriteLine(responseStr);
+                rd.Close();
+                rd.Dispose();
+
+                Console.WriteLine(responseStr);
+
+                var result = JsonConvert.DeserializeObject<ImgrRootobject>(responseStr);
+                List<string> imgurResultImages = new List<string>();
+                Console.WriteLine("Found Images");
+                if (result.data.is_album)
+                {
+                    Console.WriteLine("Select items"); int i = 0;
+                    foreach (ImgrImage image in result.data.images)
+                    {
+                        Console.WriteLine($"{i + 1} {image.link}"); i++;
+                        imgurResultImages.Add(image.link);
+                    }
+                }
+                int countSelection = -1;
+
+                if (imgurResultImages.Count > 1)
+                {
+                    Console.WriteLine("How Many Images do you wish to download? if you want to download the full Album Enter 0");
+                    countSelection = int.Parse(Console.ReadLine());
+                }
+                else if (imgurResultImages.Count == 1)
+                {
+                    countSelection = 0;
+                }
+                List<int> selection = new List<int>();
+                List<string> selectedItem = new List<string>();
+
+                if (countSelection != 0)
+                {
+                    Console.WriteLine("Enter the images index you want to download, to finish selection enter -1");
+                    while (!selection.Any().Equals(-1) && selection.Count <= imgurResultImages.Count)
+                    {
+                        Console.WriteLine("Enter number index to select");
+                        int choice = int.Parse(Console.ReadLine());
+                        selection.Add(choice);
+                    }
+                    for (int i = 0; i < selection.Count; i++)
+                    {
+                        selectedItem.Add(imgurResultImages[selection[i]]);
+                    }
+                }
+                else if (countSelection == 0)
+                {
+                    selectedItem = imgurResultImages;
+                }
+
+
+                WebClient imgurdownloadclient = new WebClient();
+                if (selectedItem.Count > 1)
+                {
+                    for (int i = 0; i < selectedItem.Count; i++)
+                    {
+                        imgurdownloadclient.DownloadFile(selectedItem[i], @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + Path.GetFileName(selectedItem[i]));
+                    }
+                }
+                else if (selectedItem.Count == 1)
+                {
+                    imgurdownloadclient.DownloadFile(selectedItem[0], @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + Path.GetFileName(selectedItem[0]));
+                }
             }
             else
             {
@@ -943,7 +1181,7 @@ namespace dl
 
 
             }
-            else if (firstExe && !validation1 && !validation2 && !validation3)
+            else if (firstExe && !validation1 && !validation2 && !validation3 || !firstExe && !validation1 && !validation2 && !validation3)
             {
 
                 while (!cont.Contains("no"))
