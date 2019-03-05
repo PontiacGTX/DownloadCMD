@@ -181,7 +181,7 @@ namespace dl
         }
 
 
-        static bool rContentDownloaded = false;
+        static bool rContentDownloaded { get; set; }
         #endregion reddit
 
         #region github
@@ -347,9 +347,11 @@ namespace dl
         static string usernftp { get; set; }
         static string userpassftp { get; set; }
         static string fpath { get; set; }
+        static string newFile { get; set; }
         static int first = 0;
         static bool firstExe = first == 0;
         static bool validImplicit { get; set; }
+        static string filePath { get; set; }
         static string masterDownload = "";
         static bool WebException = false;
         public static string githubAPI = "http://api.github.com/repos/:owner/:repo/releases";
@@ -469,10 +471,6 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension != "") ? true : false;
-            //"." + url.Substring(extPos, url.Length - extPos).ToString();
-            //string inList = null;
-            //inList = extensionList.SingleOrDefault(s => s.Equals(foundExtension));
-            //bool MatchesExtension = inList!=null;
 
             if (ExtensioninURL)
             {
@@ -641,17 +639,27 @@ namespace dl
 
         public void OpenFolder()
         {
-
-            Console.WriteLine($"\nYour file has been saved: {fpath}"); string opn = "";
-            Console.WriteLine("Open File Directory?"); opn = Console.ReadLine();
-            string selectedFile = "/select, \"" + fpath + "\"";
-            if (opn.Contains("y") || opn.Contains("yes")) Process.Start("explorer.exe", selectedFile);
+            if (File.Exists(filePath))
+            {
+                Console.WriteLine($"\nYour file has been saved: {filePath}"); string opn = "";
+                Console.WriteLine("Open File Directory?"); opn = Console.ReadLine();
+                string selectedFile = "/select, \"" + filePath + "\"";
+                if (opn.Contains("y") || opn.Contains("yes")) Process.Start("explorer.exe", selectedFile);
+            }
+            else if (File.Exists(newFile))
+            {
+                Console.WriteLine($"\nYour file has been saved: {newFile}"); string opn = "";
+                Console.WriteLine("Open File Directory?"); opn = Console.ReadLine();
+                string selectedFile = "/select, \"" + newFile + "\"";
+                if (opn.Contains("y") || opn.Contains("yes")) Process.Start("explorer.exe", selectedFile);
+            }
+            
             WebException = false;
         }
 
         public void DownloadFile()
         {
-            string filePath = "";
+             filePath = "";
 
 
 
@@ -967,7 +975,7 @@ namespace dl
                         Console.WriteLine("Audio Downloaded\n");
 
 
-                        Console.WriteLine("Downloading ffmpeg to join the media content");
+                        Console.WriteLine("Downloading ffmpeg to merge the media content");
 
                         string ffmpegfolder = String.Empty;
                         string ffmegFilename = string.Empty;
@@ -999,7 +1007,7 @@ namespace dl
                             dirExtract += Path.DirectorySeparatorChar;
 
 
-                        if (Directory.Exists(dirExtract).Equals(false))
+                        if (Directory.GetFileSystemEntries(dirExtract).Length == 0)
                         {
                             ZipFile.ExtractToDirectory(ffmpegfolder, dirExtract);
                         }
@@ -1007,7 +1015,7 @@ namespace dl
                         ffmpegfolder = dirExtract + "ffmpeg-20190227-85051fe-win64-static\\bin\\ffmpeg.exe";
 
 
-                        var newFile = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + dataObject.title + "RedditVideo.mp4";
+                         newFile = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + dataObject.title + "RedditVideo.mp4";
 
                         if (File.Exists(newFile))
                         {
@@ -1020,7 +1028,7 @@ namespace dl
 
 
                         ProcessStartInfo SI = new ProcessStartInfo();
-                        SI.CreateNoWindow = true;
+                        SI.CreateNoWindow = false;
                         SI.FileName = "cmd.exe";
                         SI.WorkingDirectory = @"" + outputPath;
                         SI.Arguments = ffmpegArgs;
@@ -1038,9 +1046,6 @@ namespace dl
                 }
                 else
                 {
-
-                    //var imagefirst = GetIndex(url, '/', 7);
-                    //var imagelast = (GetIndex(url, '/', 8) > -1) ? (GetIndex(url, '/', 8)) : url.Length;
 
                     if (dataObject.media.reddit_video.is_gif)
                     {
@@ -1210,7 +1215,7 @@ namespace dl
             {
                 DownloadFTP(filePath);
             }
-            else if (url.Contains("http") || (url.Contains("https")) && !rContentDownloaded )
+            else if ((url.Contains("http") && rContentDownloaded.Equals(false))  || ((url.Contains("https")) && rContentDownloaded.Equals(false)) )
             {
                 try
                 {
@@ -1232,9 +1237,10 @@ namespace dl
             }
 
             url = String.Empty;
+            newFile = "";
             rContentDownloaded = false;
 
-            if (!WebException && File.Exists(filePath))
+            if (!WebException &&   (File.Exists(filePath)  || File.Exists(newFile)))
             {
                 OpenFolder();
             }
@@ -1341,3 +1347,4 @@ namespace dl
         }
     }
 }
+
