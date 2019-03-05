@@ -11,7 +11,7 @@ using System.Threading;
 using System.Net.Http.Formatting;
 using System.Net.Http;
 using Newtonsoft.Json;
-
+using System.IO.Compression;
 
 
 namespace dl
@@ -20,7 +20,6 @@ namespace dl
     {
 
         #region reddit
-
         public class RRootobject
         {
             public string kind { get; set; }
@@ -30,13 +29,13 @@ namespace dl
         public class Data
         {
             public string modhash { get; set; }
-            public int dist { get; set; }
-            public Product[] children { get; set; }
+            public int? dist { get; set; }
+            public Child[] children { get; set; }
             public object after { get; set; }
             public object before { get; set; }
         }
 
-        public class Product
+        public class Child
         {
             public string kind { get; set; }
             public Data1 data { get; set; }
@@ -46,22 +45,64 @@ namespace dl
         {
 
             public string title { get; set; }
+            public object[] link_flair_richtext { get; set; }
+            public string subreddit_name_prefixed { get; set; }
+            public bool hidden { get; set; }
+            public object pwls { get; set; }
+            public object link_flair_css_class { get; set; }
+            public string name { get; set; }
+            public string domain { get; set; }
+            public Media_Embed media_embed { get; set; }
             public Secure_Media secure_media { get; set; }
             public bool is_reddit_media_domain { get; set; }
+            public bool is_meta { get; set; }
             public object category { get; set; }
+            public Secure_Media_Embed secure_media_embed { get; set; }
+            public object[] author_flair_richtext { get; set; }
+            public Gildings gildings { get; set; }
             public string post_hint { get; set; }
             public object content_categories { get; set; }
             public bool is_self { get; set; }
-           // public Preview preview { get; set; }
+            public object mod_note { get; set; }
+            public float created { get; set; }
+            public object wls { get; set; }
+            public bool contest_mode { get; set; }
+            public object selftext_html { get; set; }
+            public object suggested_sort { get; set; }
+            public bool is_crosspostable { get; set; }
+            public Preview preview { get; set; }
             public Media media { get; set; }
             public bool media_only { get; set; }
-            public object report_reasons { get; set; }
-            public string author { get; set; }
+            public bool can_gild { get; set; }
+            public bool spoiler { get; set; }
+            public bool locked { get; set; }
+            public object distinguished { get; set; }
+            public string id { get; set; }
+            public bool is_robot_indexable { get; set; }
+            public bool send_replies { get; set; }
+            public bool author_patreon_flair { get; set; }
+            public object author_flair_text_color { get; set; }
+            public string permalink { get; set; }
+            public object whitelist_status { get; set; }
             public string url { get; set; }
             public bool is_video { get; set; }
+            public string link_id { get; set; }
+            public string parent_id { get; set; }
+            public string body { get; set; }
+            public bool is_submitter { get; set; }
+            public object collapsed_reason { get; set; }
+            public string body_html { get; set; }
+            public bool collapsed { get; set; }
+            public int depth { get; set; }
         }
+
+        public class Media_Embed
+        {
+        }
+
         public class Secure_Media
         {
+
             public Reddit_Video reddit_video { get; set; }
         }
 
@@ -71,24 +112,34 @@ namespace dl
             public int height { get; set; }
             public int width { get; set; }
             public string scrubber_media_url { get; set; }
-            public string dash_url { get; set; }
             public int duration { get; set; }
             public string hls_url { get; set; }
             public bool is_gif { get; set; }
             public string transcoding_status { get; set; }
         }
 
-        
-        //public class Preview
-        //{
-        //    public Image[] images { get; set; }
-        //    public bool enabled { get; set; }
-        //}
+        public class Secure_Media_Embed
+        {
+        }
+
+        public class Gildings
+        {
+            public int gid_1 { get; set; }
+            public int gid_2 { get; set; }
+            public int gid_3 { get; set; }
+        }
+
+        public class Preview
+        {
+            public Image[] images { get; set; }
+            public bool enabled { get; set; }
+        }
 
         public class Image
         {
             public Source source { get; set; }
             public Resolution[] resolutions { get; set; }
+            public Variants variants { get; set; }
             public string id { get; set; }
         }
 
@@ -99,7 +150,9 @@ namespace dl
             public int height { get; set; }
         }
 
-
+        public class Variants
+        {
+        }
 
         public class Resolution
         {
@@ -124,9 +177,11 @@ namespace dl
             public string hls_url { get; set; }
             public bool is_gif { get; set; }
             public string transcoding_status { get; set; }
+
         }
 
 
+        static bool rContentDownloaded = false;
         #endregion reddit
 
         #region github
@@ -606,11 +661,12 @@ namespace dl
                 url = Console.ReadLine();
             }
 
-            if (!url.Contains("http://") || !url.Contains("https://") && url.Contains("www."))
+            if ((!url.Contains("http") && url.Contains("www.")) || (!url.Contains("https") && url.Contains("www.")))
             {
                 StringBuilder Addinurl = new StringBuilder(url);
                 url = Addinurl.Replace("www.", "https://").ToString(); ;
             }
+            
             int protocolWordlength = url.IndexOf(':');
             string protocol = (protocolWordlength > 0) ? url.Substring(0, protocolWordlength) : "";
 
@@ -803,38 +859,52 @@ namespace dl
 
                 if (GetIndex(jsonurl, '/', 8) == -1)
                 {
-                    jsonurl += "/.json";
+                    jsonurl += ".json";
                 }
                 else
                 {
+                    jsonurl = jsonurl.Substring(0, jsonurl.Length).ToString();
                     jsonurl += ".json";
                 }
 
                 var redditJsonpath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\redditfile.json";
-                client.DownloadFile(jsonurl, redditJsonpath);
+                using (WebClient localclient = new WebClient())
+                {
+                    localclient.DownloadFile(jsonurl, redditJsonpath);
+                }
                 var jsonString = File.ReadAllText(redditJsonpath);
 
                 var deserializedStr = JsonConvert.DeserializeObject<IList<RRootobject>>(jsonString);
 
                 List<RRootobject> foundElements = deserializedStr.ToList();
 
-                Product dataObject = new Product();
-                dataObject.data.secure_media.reddit_video.fallback_url = "";
+                var dataObjectvideoURL = new Reddit_Video();
+                var dataObject = new Data1();
 
 
-                foreach (Product _object in foundElements[0].data.children)
+                dataObjectvideoURL.fallback_url = String.Empty;
+
+                foreach (Child _objectData in foundElements[0].data.children)
                 {
-                    dataObject.data.secure_media.reddit_video.fallback_url = _object.data.secure_media.reddit_video.fallback_url + "/";
-                    dataObject.data.url = _object.data.url + "/";
-                    dataObject.data.is_video = _object.data.is_video;
+                    if (!String.IsNullOrEmpty(_objectData.data.secure_media.reddit_video.fallback_url))
+                        dataObjectvideoURL.fallback_url = _objectData.data.secure_media.reddit_video.fallback_url;
+
+                    if (_objectData.data.is_video != null)
+                        dataObject.is_video = _objectData.data.is_video;
+
+                    if (_objectData.data.url != null)
+                        dataObject.url = _objectData.data.url;
 
                 }
+                File.Delete(redditJsonpath);
 
-                if (dataObject.data.is_video)
+                //dataObject.data.url = _object.data.url + "/";
+
+                if (dataObject.is_video)
                 {
-                    if (dataObject.data.secure_media.reddit_video.fallback_url != "")
+                    if (dataObjectvideoURL.fallback_url != String.Empty && dataObjectvideoURL.fallback_url != null)
                     {
-                        var mediaURL = dataObject.data.secure_media.reddit_video.fallback_url;
+                        var mediaURL = dataObjectvideoURL.fallback_url;
 
                         HttpWebRequest request = (HttpWebRequest)WebRequest.Create(mediaURL);
                         request.Method = WebRequestMethods.Http.Get;
@@ -846,6 +916,7 @@ namespace dl
                         //var last = (GetIndex(url, '/', 8) > -1) ? (GetIndex(url, '/', 8)) : url.Length;
 
                         var mediaPath = "";
+                        
 
 
                         List<int> extensionPos = FindExtensionPos(result);
@@ -857,18 +928,25 @@ namespace dl
                             ShowElements(extensionPos);
                             Console.WriteLine("Select the extension of the video");
                             int position = int.Parse(Console.ReadLine());
-                            mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + dataObject.data.title + extensionList[position - 1];
+                            mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + dataObject.title + extensionList[position - 1];
                         }
                         else if (extensionPos.Count == 1)
                         {
-                            mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + dataObject.data.title + extensionList[extensionPos[0]];
+                            mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + dataObject.title + extensionList[extensionPos[0]];
                         }
                         else
                         {
-                            mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + dataObject.data.title + ".mp4";
+                            mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + "video.mp4";
                         }
 
+                        if (File.Exists(mediaPath))
+                        {
+                            mediaPath = Rename(mediaPath);
+                        }
+
+
                         Console.WriteLine("Downloading Video");
+                        WebRequest.DefaultWebProxy = null;
                         client.DownloadFile(mediaURL, mediaPath);
 
                         Console.WriteLine("Video Downloaded");
@@ -878,20 +956,83 @@ namespace dl
                         int end = GetIndex(mediaURL, '?', 1);
 
                         var audioURL = addtourl.Replace(mediaURL.Substring(start, end - start).ToString(), "audio").ToString();
-                        Console.WriteLine("Downloading Audio");
+                          Console.WriteLine("Downloading Audio");
                         var audioPath = "";
-                        audioPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + dataObject.data.title + ".mp4";
+                        audioPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + dataObject.title + "_audio.mp4";
+                        if (File.Exists(mediaPath))
+                        {
+                            audioPath = Rename(audioPath);
+                        }
                         client.DownloadFile(audioURL, audioPath);
-
                         Console.WriteLine("Audio Downloaded\n");
 
 
-                        Console.WriteLine("Joining Video and Audio Sources...");
+                        Console.WriteLine("Downloading ffmpeg to join the media content");
+
+                        string ffmpegfolder = String.Empty;
+                        string ffmegFilename = string.Empty;
+                        string dirExtract = string.Empty;
+
+                        using (var tempDownloadclient = new WebClient())
+                        {
+                            string ffmpegURL = "https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20190227-85051fe-win64-static.zip";
+                            int ffmpegurlStarts = ffmpegURL.LastIndexOf('/') + 1;
+                            int ffmpegurlEnds = ffmpegURL.LastIndexOf('.');
+                            ffmpegfolder = ffmpegURL.Substring(ffmpegurlStarts, ffmpegurlEnds - ffmpegurlStarts).ToString();
+                            dirExtract = @"C:\Users\" + Environment.UserName.ToString() + @"\Desktop\" + ffmpegfolder;
+
+                            if (!Directory.Exists(dirExtract))
+                            {
+                                Directory.CreateDirectory(dirExtract);
+                            }
+
+                            ffmegFilename = ffmpegURL.Substring(ffmpegURL.LastIndexOf('/') + 1, ffmpegURL.Length - (ffmpegURL.LastIndexOf('/') + 1));
+                            ffmpegfolder = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + ffmpegfolder + ".zip";
+                            if (!File.Exists(ffmpegfolder))
+                            {
+                                tempDownloadclient.DownloadFile(ffmpegURL, ffmpegfolder);
+                            }
+                        }
+                        Console.WriteLine("FFMPEG Downloaded \nMerging Video to audio");
+
+                        if (!dirExtract.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                            dirExtract += Path.DirectorySeparatorChar;
+
+
+                        if (Directory.Exists(dirExtract).Equals(false))
+                        {
+                            ZipFile.ExtractToDirectory(ffmpegfolder, dirExtract);
+                        }
+
+                        ffmpegfolder = dirExtract + "ffmpeg-20190227-85051fe-win64-static\\bin\\ffmpeg.exe";
+
+
+                        var newFile = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + dataObject.title + "RedditVideo.mp4";
+
+                        if (File.Exists(newFile))
+                        {
+                            newFile = Rename(newFile);
+                        }
+                        
+                        string ffmpegArgs = "/c ffmpeg " + " -i " + mediaPath + " -i " + audioPath + " -shortest " + newFile;
+                        string outputPath = ffmpegfolder.Substring(0, ffmpegfolder.LastIndexOf('\\')).ToString();
 
 
 
+                        ProcessStartInfo SI = new ProcessStartInfo();
+                        SI.CreateNoWindow = true;
+                        SI.FileName = "cmd.exe";
+                        SI.WorkingDirectory = @"" + outputPath;
+                        SI.Arguments = ffmpegArgs;
+                        using (var FFMPEG = Process.Start(SI))
+                        {
+                            FFMPEG.WaitForExit();
+                        }
 
-
+                        File.Delete(mediaPath);
+                        File.Delete(audioPath);
+                        Directory.Delete(dirExtract, true);
+                        rContentDownloaded = true;
                     }
 
                 }
@@ -901,16 +1042,16 @@ namespace dl
                     //var imagefirst = GetIndex(url, '/', 7);
                     //var imagelast = (GetIndex(url, '/', 8) > -1) ? (GetIndex(url, '/', 8)) : url.Length;
 
-                    if (dataObject.data.media.reddit_video.is_gif)
+                    if (dataObject.media.reddit_video.is_gif)
                     {
-                        url = dataObject.data.media.reddit_video.fallback_url;
-                        filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + dataObject.data.title + ".gif";
+                        url = dataObject.media.reddit_video.fallback_url;
+                        filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + dataObject.title + ".gif";
 
                     }
                     else
                     {
-                        url = dataObject.data.url;
-                        filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + dataObject.data.title + GetExt();
+                        url = dataObject.url;
+                        filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + dataObject.title + GetExt();
 
                     }
 
@@ -1048,7 +1189,7 @@ namespace dl
                     filePath = "C:\\Users\\" + Environment.UserName.ToString() + "\\Downloads" + "\\" + filePath;
                     indexes.Clear();
                 }
-                else if (hasMIMEtype && ext != "")
+                else 
                 {
                     filePath = GetName();
                     filePath = "C:\\Users\\" + Environment.UserName.ToString() + "\\Downloads" + "\\" + filePath;
@@ -1069,7 +1210,7 @@ namespace dl
             {
                 DownloadFTP(filePath);
             }
-            else
+            else if (url.Contains("http") || (url.Contains("https")) && !rContentDownloaded )
             {
                 try
                 {
@@ -1091,11 +1232,13 @@ namespace dl
             }
 
             url = String.Empty;
+            rContentDownloaded = false;
 
             if (!WebException && File.Exists(filePath))
             {
                 OpenFolder();
             }
+
             WebException = false;
             Console.WriteLine("Do you want to download another file?");
 
