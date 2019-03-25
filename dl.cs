@@ -185,26 +185,39 @@ namespace dl
         #endregion reddit
 
         #region github
-        public class Rootobject
+      
+        public class GitHubRootobject
         {
-
+            public string url { get; set; }
+            public string assets_url { get; set; }
+            public string upload_url { get; set; }
+            public string html_url { get; set; }
+            public int id { get; set; }
+            public string node_id { get; set; }
+            public string tag_name { get; set; }
+            public string target_commitish { get; set; }
             public string name { get; set; }
+            public bool draft { get; set; }
+            public bool prerelease { get; set; }
+            public DateTime created_at { get; set; }
+            public DateTime published_at { get; set; }
             public Asset[] assets { get; set; }
             public string tarball_url { get; set; }
             public string zipball_url { get; set; }
             public string body { get; set; }
-
         }
-
-
 
         public class Asset
         {
+            public string url { get; set; }
+            public int id { get; set; }
+            public string node_id { get; set; }
             public string name { get; set; }
-            public string label { get; set; }
+            public object label { get; set; }
             public string content_type { get; set; }
             public string state { get; set; }
             public int size { get; set; }
+            public int download_count { get; set; }
             public DateTime created_at { get; set; }
             public DateTime updated_at { get; set; }
             public string browser_download_url { get; set; }
@@ -557,6 +570,7 @@ namespace dl
 
             return url;
         }
+
         public string GetReleaseUrl()
         {
             StringBuilder addurl = new StringBuilder(githubAPI);
@@ -565,7 +579,7 @@ namespace dl
             githubAPI = addurl.ToString();
 
 
-            Rootobject results = new Rootobject();
+            GitHubRootobject results = new GitHubRootobject();
 
             try
             {
@@ -577,21 +591,22 @@ namespace dl
 
                 response.EnsureSuccessStatusCode();
 
-                var compressedFiles = response.Content.ReadAsAsync<IEnumerable<Rootobject>>().GetAwaiter().GetResult();
+                var compressedFiles = response.Content.ReadAsAsync<IList<GitHubRootobject>>().GetAwaiter().GetResult();
 
-                List<Rootobject> downloadElements = compressedFiles.ToList();
-
-
+                List<GitHubRootobject> downloadElements = compressedFiles.ToList();
+                
 
                 Console.WriteLine("Do you want to Download zip/tar/other files? write the option to show a list of Releases ");
 
                 string fileTypeToShow = Console.ReadLine().ToLower();
 
-                Console.WriteLine($"Description:  {downloadElements[0].body}  \n\nSelect one Option:");
+                Console.WriteLine($"\n\nSelect one Option:");
                 int Selection = -1;
+                
+
                 if (fileTypeToShow == "zip")
                 {
-                    for (int i = 0; i < downloadElements.Count; i++)
+                    for (int i = 0; i < downloadElements.Count(); i++)
                     {
                         Console.WriteLine($"{i + 1}) {GetRepo(url)}-{Path.GetFileName(downloadElements[i].zipball_url)}.zip");
                     }
@@ -607,7 +622,7 @@ namespace dl
                     }
                     Console.WriteLine("Select Number: ");
                     Selection = int.Parse(Console.ReadLine());
-                    return downloadElements[Selection - 1].tarball_url;
+                   return downloadElements[Selection - 1].tarball_url;
                 }
                 else if (fileTypeToShow == "other")
                 {
@@ -616,8 +631,8 @@ namespace dl
                     {
                         foreach (Asset File in downloadElements[i].assets)
                         {
-                            Console.WriteLine($"{i + 1}) {Path.GetFileName(File.browser_download_url)}       {File.size / 1048576} MB");
-                            urlList.Add(File.browser_download_url);
+                           Console.WriteLine($"{i + 1}) {Path.GetFileName(File.browser_download_url)}       {File.size / 1048576} MB");
+                           urlList.Add(File.browser_download_url);
                         }
                     }
                     Console.WriteLine("Select Number: ");
@@ -906,8 +921,6 @@ namespace dl
                 }
                 File.Delete(redditJsonpath);
 
-                //dataObject.data.url = _object.data.url + "/";
-
                 if (dataObject.is_video)
                 {
                     if (dataObjectvideoURL.fallback_url != String.Empty && dataObjectvideoURL.fallback_url != null)
@@ -1047,6 +1060,7 @@ namespace dl
                 else
                 {
 
+
                     if (dataObject.media.reddit_video.is_gif)
                     {
                         url = dataObject.media.reddit_video.fallback_url;
@@ -1059,8 +1073,6 @@ namespace dl
                         filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + dataObject.title + GetExt();
 
                     }
-
-                    //other format gif/image
                 }
 
             }
@@ -1347,4 +1359,6 @@ namespace dl
         }
     }
 }
+
+
 
