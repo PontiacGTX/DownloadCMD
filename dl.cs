@@ -971,88 +971,92 @@ namespace dl
                         client.DownloadFile(mediaURL, mediaPath);
 
                         Console.WriteLine("Video Downloaded");
-
-                        StringBuilder addtourl = new StringBuilder(mediaURL);
-                        int start = GetIndex(mediaURL, '/', 4) + 1;
-                        int end = GetIndex(mediaURL, '?', 1);
-
-                        var audioURL = addtourl.Replace(mediaURL.Substring(start, end - start).ToString(), "audio").ToString();
-                          Console.WriteLine("Downloading Audio");
-                        var audioPath = "";
-                        audioPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + dataObject.title + "_audio.mp4";
-                        if (File.Exists(mediaPath))
+                        try
                         {
-                            audioPath = Rename(audioPath);
-                        }
-                        client.DownloadFile(audioURL, audioPath);
-                        Console.WriteLine("Audio Downloaded\n");
+                            StringBuilder addtourl = new StringBuilder(mediaURL);
+                            int start = GetIndex(mediaURL, '/', 4) + 1;
+                            int end = GetIndex(mediaURL, '?', 1);
 
-
-                        Console.WriteLine("Downloading ffmpeg to merge the media content");
-
-                        string ffmpegfolder = String.Empty;
-                        string ffmegFilename = string.Empty;
-                        string dirExtract = string.Empty;
-
-                        using (var tempDownloadclient = new WebClient())
-                        {
-                            string ffmpegURL = "https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20190227-85051fe-win64-static.zip";
-                            int ffmpegurlStarts = ffmpegURL.LastIndexOf('/') + 1;
-                            int ffmpegurlEnds = ffmpegURL.LastIndexOf('.');
-                            ffmpegfolder = ffmpegURL.Substring(ffmpegurlStarts, ffmpegurlEnds - ffmpegurlStarts).ToString();
-                            dirExtract = @"C:\Users\" + Environment.UserName.ToString() + @"\Desktop\" + ffmpegfolder;
-
-                            if (!Directory.Exists(dirExtract))
+                            var audioURL = addtourl.Replace(mediaURL.Substring(start, end - start).ToString(), "audio").ToString();
+                            Console.WriteLine("Downloading Audio");
+                            var audioPath = "";
+                            audioPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + dataObject.title + "_audio.mp4";
+                            if (File.Exists(mediaPath))
                             {
-                                Directory.CreateDirectory(dirExtract);
+                                audioPath = Rename(audioPath);
+                            }
+                            client.DownloadFile(audioURL, audioPath);
+                            Console.WriteLine("Audio Downloaded\n");
+                            string ffmpegfolder = String.Empty;
+                            string ffmegFilename = string.Empty;
+                            string dirExtract = string.Empty;
+
+                            using (var tempDownloadclient = new WebClient())
+                            {
+                                string ffmpegURL = "https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20190227-85051fe-win64-static.zip";
+                                int ffmpegurlStarts = ffmpegURL.LastIndexOf('/') + 1;
+                                int ffmpegurlEnds = ffmpegURL.LastIndexOf('.');
+                                ffmpegfolder = ffmpegURL.Substring(ffmpegurlStarts, ffmpegurlEnds - ffmpegurlStarts).ToString();
+                                dirExtract = @"C:\Users\" + Environment.UserName.ToString() + @"\Desktop\" + ffmpegfolder;
+
+                                if (!Directory.Exists(dirExtract))
+                                {
+                                    Directory.CreateDirectory(dirExtract);
+                                }
+
+                                ffmegFilename = ffmpegURL.Substring(ffmpegURL.LastIndexOf('/') + 1, ffmpegURL.Length - (ffmpegURL.LastIndexOf('/') + 1));
+                                ffmpegfolder = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + ffmpegfolder + ".zip";
+                                if (!File.Exists(ffmpegfolder))
+                                {
+                                    tempDownloadclient.DownloadFile(ffmpegURL, ffmpegfolder);
+                                }
+                            }
+                            Console.WriteLine("FFMPEG Downloaded \nMerging Video to audio");
+
+                            if (!dirExtract.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                                dirExtract += Path.DirectorySeparatorChar;
+
+
+                            if (Directory.GetFileSystemEntries(dirExtract).Length == 0)
+                            {
+                                ZipFile.ExtractToDirectory(ffmpegfolder, dirExtract);
                             }
 
-                            ffmegFilename = ffmpegURL.Substring(ffmpegURL.LastIndexOf('/') + 1, ffmpegURL.Length - (ffmpegURL.LastIndexOf('/') + 1));
-                            ffmpegfolder = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + ffmpegfolder + ".zip";
-                            if (!File.Exists(ffmpegfolder))
+                            ffmpegfolder = dirExtract + "ffmpeg-20190227-85051fe-win64-static\\bin\\ffmpeg.exe";
+
+
+                            newFile = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + dataObject.title + "RedditVideo.mp4";
+
+                            if (File.Exists(newFile))
                             {
-                                tempDownloadclient.DownloadFile(ffmpegURL, ffmpegfolder);
+                                newFile = Rename(newFile);
                             }
+
+                            string ffmpegArgs = "/c ffmpeg " + " -i " + mediaPath + " -i " + audioPath + " -shortest " + newFile;
+                            string outputPath = ffmpegfolder.Substring(0, ffmpegfolder.LastIndexOf('\\')).ToString();
+
+
+
+                            ProcessStartInfo SI = new ProcessStartInfo();
+                            SI.CreateNoWindow = false;
+                            SI.FileName = "cmd.exe";
+                            SI.WorkingDirectory = @"" + outputPath;
+                            SI.Arguments = ffmpegArgs;
+                            using (var FFMPEG = Process.Start(SI))
+                            {
+                                FFMPEG.WaitForExit();
+                            }
+
+                            File.Delete(mediaPath);
+                            File.Delete(audioPath);
+                            Directory.Delete(dirExtract, true);
                         }
-                        Console.WriteLine("FFMPEG Downloaded \nMerging Video to audio");
-
-                        if (!dirExtract.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                            dirExtract += Path.DirectorySeparatorChar;
-
-
-                        if (Directory.GetFileSystemEntries(dirExtract).Length == 0)
+                        catch (Exception ex)
                         {
-                            ZipFile.ExtractToDirectory(ffmpegfolder, dirExtract);
+                            Console.WriteLine("Video doesnt contains audio");
                         }
-
-                        ffmpegfolder = dirExtract + "ffmpeg-20190227-85051fe-win64-static\\bin\\ffmpeg.exe";
-
-
-                         newFile = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + dataObject.title + "RedditVideo.mp4";
-
-                        if (File.Exists(newFile))
-                        {
-                            newFile = Rename(newFile);
-                        }
+                       if(Directory.Exists(mediaPath)) File.Delete(mediaPath);
                         
-                        string ffmpegArgs = "/c ffmpeg " + " -i " + mediaPath + " -i " + audioPath + " -shortest " + newFile;
-                        string outputPath = ffmpegfolder.Substring(0, ffmpegfolder.LastIndexOf('\\')).ToString();
-
-
-
-                        ProcessStartInfo SI = new ProcessStartInfo();
-                        SI.CreateNoWindow = false;
-                        SI.FileName = "cmd.exe";
-                        SI.WorkingDirectory = @"" + outputPath;
-                        SI.Arguments = ffmpegArgs;
-                        using (var FFMPEG = Process.Start(SI))
-                        {
-                            FFMPEG.WaitForExit();
-                        }
-
-                        File.Delete(mediaPath);
-                        File.Delete(audioPath);
-                        Directory.Delete(dirExtract, true);
                         rContentDownloaded = true;
                     }
 
