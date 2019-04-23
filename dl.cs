@@ -1048,7 +1048,10 @@ namespace dl
                             }
 
                             File.Delete(mediaPath);
-                            File.Delete(audioPath);
+                            
+                            if(File.Exists(audioPath))
+                                File.Delete(audioPath);
+                            
                             Directory.Delete(dirExtract, true);
                         }
                         catch (Exception ex)
