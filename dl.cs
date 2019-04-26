@@ -274,13 +274,13 @@ namespace dl
 
                 Console.WriteLine($"\n\nSelect one Option:");
                 int Selection = -1;
-                
 
+                string repo = GetRepo(url);
                 if (fileTypeToShow == "zip")
-                {
+                {   
                     for (int i = 0; i < downloadElements.Count(); i++)
                     {
-                        Console.WriteLine($"{i + 1}) {GetRepo(url)}-{Path.GetFileName(downloadElements[i].zipball_url)}.zip");
+                        Console.WriteLine($"{i + 1}) {repo}-{Path.GetFileName(downloadElements[i].zipball_url)}.zip");
                     }
                     Console.WriteLine("Select Number: ");
                     Selection = int.Parse(Console.ReadLine());
@@ -290,7 +290,7 @@ namespace dl
                 {
                     for (int i = 0; i < downloadElements.Count; i++)
                     {
-                        Console.WriteLine($"{i + 1}) {GetRepo(url)}-{Path.GetFileName(downloadElements[i].tarball_url)}.tar");
+                        Console.WriteLine($"{i + 1}) {repo}-{Path.GetFileName(downloadElements[i].tarball_url)}.tar");
                     }
                     Console.WriteLine("Select Number: ");
                     Selection = int.Parse(Console.ReadLine());
