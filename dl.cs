@@ -189,8 +189,11 @@ namespace dl
             StringBuilder AddtoURL = new StringBuilder(url);
 
             int masterDirIndex = 0;
-            Console.WriteLine("Download Master? ");
-            masterDownload = Console.ReadLine().ToLower();
+            if (!programmingLangEx.Any(element => element.Contains(ext)))
+            {
+                Console.WriteLine("Download Master? ");
+                masterDownload = Console.ReadLine().ToLower();
+            }
 
             masterDirIndex = GetIndex(url, '/', 5);
             bool isCompleted = masterDirIndex > -1;
@@ -211,7 +214,6 @@ namespace dl
 
                 url = AddtoURL.Replace("/blob/", "/").ToString();
                 url = AddtoURL.Replace("github", "raw.githubusercontent").ToString();
-
                 return url;
             }
             else if ((!url.Contains("/blob/") && ext == "" && ((masterDownload == "yes") || masterDownload == "y")) && (masterDirIndex >= -1))
