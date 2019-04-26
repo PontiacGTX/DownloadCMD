@@ -19,6 +19,9 @@ namespace dl
     partial class Program
     {
 
+        
+       
+
         WebClient client = new WebClient();
         public int count = 0;
         static string url { get; set; }
@@ -149,6 +152,10 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension != "") ? true : false;
+            //"." + url.Substring(extPos, url.Length - extPos).ToString();
+            //string inList = null;
+            //inList = extensionList.SingleOrDefault(s => s.Equals(foundExtension));
+            //bool MatchesExtension = inList!=null;
 
             if (ExtensioninURL)
             {
@@ -291,13 +298,15 @@ namespace dl
                 }
                 else if (fileTypeToShow == "other")
                 {
+                    int count = 0;
                     List<string> urlList = new List<string>();
                     for (int i = 0; i < downloadElements.Count; i++)
                     {
                         foreach (Asset File in downloadElements[i].assets)
                         {
-                           Console.WriteLine($"{i + 1}) {Path.GetFileName(File.browser_download_url)}       {File.size / 1048576} MB");
+                           Console.WriteLine($"{count+1}) {Path.GetFileName(File.browser_download_url)}       {Convert.ToSingle(File.size) / 1048576} MB");
                            urlList.Add(File.browser_download_url);
+                           count++;
                         }
                     }
                     Console.WriteLine("Select Number: ");
@@ -586,6 +595,8 @@ namespace dl
                 }
                 File.Delete(redditJsonpath);
 
+                //dataObject.data.url = _object.data.url + "/";
+
                 if (dataObject.is_video)
                 {
                     if (dataObjectvideoURL.fallback_url != String.Empty && dataObjectvideoURL.fallback_url != null)
@@ -713,10 +724,10 @@ namespace dl
                             }
 
                             File.Delete(mediaPath);
-                            
+
                             if(File.Exists(audioPath))
                                 File.Delete(audioPath);
-                            
+
                             Directory.Delete(dirExtract, true);
                         }
                         catch (Exception ex)
@@ -724,7 +735,6 @@ namespace dl
                             Console.WriteLine("Video doesnt contains audio");
                         }
                        if(Directory.Exists(mediaPath)) File.Delete(mediaPath);
-                        
                         rContentDownloaded = true;
                     }
 
@@ -732,6 +742,8 @@ namespace dl
                 else
                 {
 
+                    //var imagefirst = GetIndex(url, '/', 7);
+                    //var imagelast = (GetIndex(url, '/', 8) > -1) ? (GetIndex(url, '/', 8)) : url.Length;
 
                     if (dataObject.media.reddit_video.is_gif)
                     {
@@ -745,6 +757,8 @@ namespace dl
                         filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + dataObject.title + GetExt();
 
                     }
+
+                    //other format gif/image
                 }
 
             }
@@ -1031,6 +1045,3 @@ namespace dl
         }
     }
 }
-
-
-
