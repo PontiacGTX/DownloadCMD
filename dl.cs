@@ -311,6 +311,7 @@ namespace dl
                     }
                     Console.WriteLine("Select Number: ");
                     Selection = int.Parse(Console.ReadLine());
+                    count = 0;
                     return urlList[Selection - 1];
                 }
                 fileTypeToShow = "";
