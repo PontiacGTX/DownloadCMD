@@ -166,7 +166,7 @@ namespace dl
         }
 
 
-        static bool rContentDownloaded { get; set; }
+         bool rContentDownloaded { get; set; }
 #endregion reddit
 
         #region github
@@ -339,6 +339,7 @@ namespace dl
             public string status { get; set; }
         }
 
+        bool imgurContentDownloaded { get; set; }
 
         #endregion imgur
     }
