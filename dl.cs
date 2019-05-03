@@ -616,7 +616,7 @@ namespace dl
                         //var last = (GetIndex(url, '/', 8) > -1) ? (GetIndex(url, '/', 8)) : url.Length;
 
                         var mediaPath = "";
-                        
+
 
 
                         List<int> extensionPos = FindExtensionPos(result);
@@ -728,7 +728,7 @@ namespace dl
 
                             File.Delete(mediaPath);
 
-                            if(File.Exists(audioPath))
+                            if (File.Exists(audioPath))
                                 File.Delete(audioPath);
 
                             Directory.Delete(dirExtract, true);
@@ -737,7 +737,7 @@ namespace dl
                         {
                             Console.WriteLine("Video doesnt contains audio");
                         }
-                       if(Directory.Exists(mediaPath)) File.Delete(mediaPath);
+                        if (Directory.Exists(mediaPath)) File.Delete(mediaPath);
                         rContentDownloaded = true;
                     }
 
@@ -786,7 +786,6 @@ namespace dl
                 var imgurAPI = "https://api.imgur.com/3/gallery/id/";
                 StringBuilder addtourl = new StringBuilder(imgurAPI);
                 url = addtourl.Replace("/id/", imgID).ToString();
-                Console.WriteLine(url);
 
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
@@ -802,13 +801,13 @@ namespace dl
 
                 Console.WriteLine(responseStr);
 
-                var result = JsonConvert.DeserializeObject<ImgrRootobject>(responseStr);
+                var imgurResult = JsonConvert.DeserializeObject<ImgrRootobject>(responseStr);
                 List<string> imgurResultImages = new List<string>();
                 Console.WriteLine("Found Images");
-                if (result.data.is_album)
+                if (imgurResult.data.is_album)
                 {
                     Console.WriteLine("Select items"); int i = 0;
-                    foreach (ImgrImage image in result.data.images)
+                    foreach (ImgrImage image in imgurResult.data.images)
                     {
                         Console.WriteLine($"{i + 1} {image.link}"); i++;
                         imgurResultImages.Add(image.link);
@@ -848,18 +847,26 @@ namespace dl
                 }
 
 
-                WebClient imgurdownloadclient = new WebClient();
-                if (selectedItem.Count > 1)
+                using (WebClient imgurdownloadclient = new WebClient())
                 {
-                    for (int i = 0; i < selectedItem.Count; i++)
+
+                    if (selectedItem.Count > 1)
                     {
-                        imgurdownloadclient.DownloadFile(selectedItem[i], @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + Path.GetFileName(selectedItem[i]));
+                        for (int i = 0; i < selectedItem.Count; i++)
+                        {
+                            imgurdownloadclient.DownloadFile(selectedItem[i], @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + Path.GetFileName(selectedItem[i]));
+                        }
+                    }
+                    else if (selectedItem.Count == 1)
+                    {
+                        imgurdownloadclient.DownloadFile(selectedItem[0], @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + Path.GetFileName(selectedItem[0]));
                     }
                 }
-                else if (selectedItem.Count == 1)
-                {
-                    imgurdownloadclient.DownloadFile(selectedItem[0], @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + Path.GetFileName(selectedItem[0]));
-                }
+                imgurContentDownloaded = true;
+                selectedItem.Clear();
+                selectedItem.Clear();
+                imgurResult = null;
+                responseStr = "";
             }
             else
             {
@@ -916,7 +923,7 @@ namespace dl
             {
                 DownloadFTP(filePath);
             }
-            else if ((url.Contains("http") && rContentDownloaded.Equals(false))  || ((url.Contains("https")) && rContentDownloaded.Equals(false)) )
+            else if ((url.Contains("http") && rContentDownloaded.Equals(false)) && imgurContentDownloaded == false || ((url.Contains("https")) && rContentDownloaded==false && imgurContentDownloaded ==false))
             {
                 try
                 {
@@ -940,6 +947,7 @@ namespace dl
             url = String.Empty;
             newFile = "";
             rContentDownloaded = false;
+            imgurContentDownloaded = false;
 
             if (!WebException &&   (File.Exists(filePath)  || File.Exists(newFile)))
             {
