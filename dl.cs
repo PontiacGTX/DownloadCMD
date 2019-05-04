@@ -795,24 +795,49 @@ namespace dl
                 var response = request.GetResponse().GetResponseStream();
                 StreamReader rd = new StreamReader(response);
                 var responseStr = rd.ReadToEnd();
-                Console.WriteLine(responseStr);
+               
                 rd.Close();
                 rd.Dispose();
-
-                Console.WriteLine(responseStr);
-
                 var imgurResult = JsonConvert.DeserializeObject<ImgrRootobject>(responseStr);
                 List<string> imgurResultImages = new List<string>();
+                var ValidLink = false;
+
+                for (int j = 0; j < imgurResult.data.images.Count(); j++)
+                {
+                    if (imgurResult.data.images[j] != null)
+                    {
+                        ValidLink = true;
+                        break;
+                    }
+                }
+
                 Console.WriteLine("Found Images");
                 if (imgurResult.data.is_album)
                 {
                     Console.WriteLine("Select items"); int i = 0;
                     foreach (ImgrImage image in imgurResult.data.images)
                     {
-                        Console.WriteLine($"{i + 1} {image.link}"); i++;
-                        imgurResultImages.Add(image.link);
+                        if (!string.IsNullOrEmpty(image.link))
+                        {
+                            Console.WriteLine($"{i + 1} {image.link}"); i++;
+                            imgurResultImages.Add(image.link);
+                        }
                     }
                 }
+                else if (ValidLink)
+                {
+                    Console.WriteLine("Select items"); int i = 0;
+                    for (long j = 0; j < imgurResult.data.images.Count(); j++)
+                    {
+                        if (imgurResult.data.images[j] != null)
+                        {
+                            imgurResultImages.Add(imgurResult.data.images[j].link);
+                            Console.WriteLine($"{i} {imgurResultImages[i]}"); ++i;
+                        }
+                    }
+                    
+                }
+
                 int countSelection = -1;
 
                 if (imgurResultImages.Count > 1)
