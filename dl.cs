@@ -1,4 +1,4 @@
-using System;
+tem;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
@@ -241,7 +241,7 @@ namespace dl
 
             return url;
         }
-        private void GetGistUrl(ref string localurl,ref string fileName,ref string extension)
+        private void GetGistUrl(ref string localurl ,ref string fileName,ref string extension)
         {
             fileName = "";
             string gistAPI = gistAPIUrl;
@@ -252,34 +252,30 @@ namespace dl
             gistAPI = gistAPIUrl.Replace(":gist_id", gistID);
             GistObject gistResult = new GistObject();
 
-            HttpClient client = new HttpClient();
-            client.BaseAddress = new Uri(gistAPI);
-            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36");
-            HttpResponseMessage response = client.PostAsJsonAsync(gistAPI, gistResult).Result;
-           
 
-            response.EnsureSuccessStatusCode();
-            var gistResults = response.Content.ReadAsAsync<IList<GistObject>>().GetAwaiter().GetResult();
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(gistAPI);
+            request.UserAgent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36";
+            request.Timeout = 5000;
+            request.Method = WebRequestMethods.Http.Get;
+            var gistResponse = request.GetResponse().GetResponseStream();
+            StreamReader rd = new StreamReader(gistResponse);
+            var responseStr = rd.ReadToEnd();
+            int beginIndex = responseStr.IndexOf("\"raw_url\": \"");
+            int endIndex = responseStr.IndexOf("\"size\":");
+            string temp = responseStr.Substring(beginIndex,((endIndex)- (beginIndex )));
+
+            beginIndex = GetIndex(temp,'"',3);
+            endIndex = GetIndex(temp, '"', 4);
+            temp = temp.Substring(beginIndex+1, endIndex - (beginIndex+1));
+            localurl = temp;
             
-            List<GistObject> gistObjectList = gistResults.ToList();
-            for (int i = 0; i < gistObjectList.Count; i++)
-            {
-                if (!string.IsNullOrEmpty(gistObjectList[i].files.FileNames.raw_url))
-                {
-                    localurl = gistObjectList[i].files.FileNames.raw_url;
-                }
-                if (!string.IsNullOrEmpty(gistObjectList[i].files.FileNames.filename))
-                {
-                    fileName = gistObjectList[i].files.FileNames.filename;
-                }
-            }
 
             if (fileName == "")
             {
-                fileName = gistID;
+                fileName = temp.Substring(temp.LastIndexOf('/')+1, temp.LastIndexOf('.') - (temp.LastIndexOf('/')+1));
             }
 
-            extension = Path.GetExtension(localurl);
+            extension = Path.GetExtension(temp);
         }
 
         public string GetReleaseUrl()
@@ -411,6 +407,7 @@ namespace dl
             {
                 Console.WriteLine("Enter a valid URL");
                 url = Console.ReadLine();
+                protocol = (protocolWordlength > 0) ? url.Substring(0, protocolWordlength) : "";
             }
 
 
@@ -420,8 +417,8 @@ namespace dl
                 string temp,filename,extension;
                 temp = ""; filename = "";extension = "";
                 GetGistUrl(ref temp,ref filename,ref extension);
-                url= temp;
-                filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + filename + "-master.zip";
+                url = temp;
+                filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + filename + extension;
 
             }
             else if (url.Contains("github") && !url.Contains("gist.github"))
@@ -993,7 +990,7 @@ namespace dl
             {
                 DownloadFTP(filePath);
             }
-            else if ((url.Contains("http") && rContentDownloaded.Equals(false)) && imgurContentDownloaded == false || ((url.Contains("https")) && rContentDownloaded==false && imgurContentDownloaded ==false))
+            else if (((url.Contains("http") && rContentDownloaded.Equals(false)) && imgurContentDownloaded == false )|| ((url.Contains("https")) && rContentDownloaded==false && imgurContentDownloaded ==false))
             {
                 try
                 {
@@ -1124,5 +1121,3 @@ namespace dl
             }
 
         }
-    }
-}
