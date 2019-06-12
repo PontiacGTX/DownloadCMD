@@ -19,9 +19,6 @@ namespace dl
     partial class Program
     {
 
-        
-       
-
         WebClient client = new WebClient();
         public int count = 0;
         static string url { get; set; }
@@ -35,8 +32,8 @@ namespace dl
         static string filePath { get; set; }
         static string masterDownload = "";
         static bool WebException = false;
-        public static string githubAPI = "http://api.github.com/repos/:owner/:repo/releases";
-
+        public static readonly string githubAPI = "http://api.github.com/repos/:owner/:repo/releases";
+        public static readonly string gistAPIUrl = "http://api.github.com/gists/:gist_id";
         readonly List<string> programmingLangEx = new List<string>() { ".c", ".cc", ".class", ".clj", ".cpp", ".cs", ".cxx", ".el", ".go", ".h", ".java", ".lua", ".m", ".h", ".m4", ".php", ".pas", ".po", ".py", ".rb", ".rs", ".sh", ".sh", ".swift", ".vb", ".vcxproj", ".xcodeproj", ".xml", ".diff", ".patch", ".exe" };
 
 
@@ -189,7 +186,7 @@ namespace dl
             StringBuilder AddtoURL = new StringBuilder(url);
 
             int masterDirIndex = 0;
-            if (!programmingLangEx.Any(element => element.Contains(ext)))
+            if (!programmingLangEx.Any(element => element.Contains(ext)) && masterDownload!="yes" || masterDownload != "y")
             {
                 Console.WriteLine("Download Master? ");
                 masterDownload = Console.ReadLine().ToLower();
@@ -244,13 +241,54 @@ namespace dl
 
             return url;
         }
+        private void GetGistUrl(ref string localurl,ref string fileName,ref string extension)
+        {
+            fileName = "";
+            string gistAPI = gistAPIUrl;
+            int gistIndexBegin = GetIndex(url, '/', 4);
+            int gistIndexEnd = url.IndexOf('#', 1) > 0 ? url.IndexOf('#', 1) : url.Length;
+            string gistID = url.Substring(gistIndexBegin + 1, gistIndexEnd - (gistIndexBegin + 1));
+
+            gistAPI = gistAPIUrl.Replace(":gist_id", gistID);
+            GistObject gistResult = new GistObject();
+
+            HttpClient client = new HttpClient();
+            client.BaseAddress = new Uri(gistAPI);
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36");
+            HttpResponseMessage response = client.PostAsJsonAsync(gistAPI, gistResult).Result;
+           
+
+            response.EnsureSuccessStatusCode();
+            var gistResults = response.Content.ReadAsAsync<IList<GistObject>>().GetAwaiter().GetResult();
+            
+            List<GistObject> gistObjectList = gistResults.ToList();
+            for (int i = 0; i < gistObjectList.Count; i++)
+            {
+                if (!string.IsNullOrEmpty(gistObjectList[i].files.FileNames.raw_url))
+                {
+                    localurl = gistObjectList[i].files.FileNames.raw_url;
+                }
+                if (!string.IsNullOrEmpty(gistObjectList[i].files.FileNames.filename))
+                {
+                    fileName = gistObjectList[i].files.FileNames.filename;
+                }
+            }
+
+            if (fileName == "")
+            {
+                fileName = gistID;
+            }
+
+            extension = Path.GetExtension(localurl);
+        }
 
         public string GetReleaseUrl()
         {
-            StringBuilder addurl = new StringBuilder(githubAPI);
+            string githubAPIURL = githubAPI;
+            StringBuilder addurl = new StringBuilder(githubAPIURL);
             addurl.Replace(":owner", GetProjectName(url));
             addurl.Replace(":repo", GetRepo(url));
-            githubAPI = addurl.ToString();
+            githubAPIURL = addurl.ToString();
 
 
             GitHubRootobject results = new GitHubRootobject();
@@ -353,8 +391,7 @@ namespace dl
         {
              filePath = "";
 
-
-
+            
             if (url == String.Empty)
             {
                 Console.WriteLine("Enter a URL");
@@ -378,8 +415,16 @@ namespace dl
 
 
             int pos = 0;
+            if (url.Contains("gist.github"))
+            {
+                string temp,filename,extension;
+                temp = ""; filename = "";extension = "";
+                GetGistUrl(ref temp,ref filename,ref extension);
+                url= temp;
+                filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + filename + "-master.zip";
 
-            if (url.Contains("github"))
+            }
+            else if (url.Contains("github") && !url.Contains("gist.github"))
             {
                 url = (GetIndex(url, '/', 5) > -1) ? url : url += '/';
 
@@ -388,7 +433,7 @@ namespace dl
                 if (!(releasesInUrl == "releases"))
                 {
                     string projectName = "";
-                    string releaseFiles = "";
+                    
 
                     if (url.Contains("/blob/"))
                     {
@@ -409,9 +454,9 @@ namespace dl
                     {
 
                         Console.WriteLine("Do you want to Download Latest Release? Yes/No");
-                        releaseFiles = Console.ReadLine().ToLower();
+                        masterDownload= Console.ReadLine().ToLower();
 
-                        if (releaseFiles == "yes" || releaseFiles == "yes")
+                        if (masterDownload == "yes" || masterDownload == "yes")
                         {
                             resultingurl = GetReleaseUrl();
                             if (resultingurl == "" || resultingurl == null)
@@ -499,9 +544,9 @@ namespace dl
                                 filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + filePath;
 
                             }
-
+                            masterDownload = "";
                         }
-                        releaseFiles = "";
+                        
                     }
                 }
                 else
@@ -795,7 +840,7 @@ namespace dl
                 var response = request.GetResponse().GetResponseStream();
                 StreamReader rd = new StreamReader(response);
                 var responseStr = rd.ReadToEnd();
-               
+
                 rd.Close();
                 rd.Dispose();
                 var imgurResult = JsonConvert.DeserializeObject<ImgrRootobject>(responseStr);
@@ -835,7 +880,7 @@ namespace dl
                             Console.WriteLine($"{i} {imgurResultImages[i]}"); ++i;
                         }
                     }
-                    
+
                 }
 
                 int countSelection = -1;
@@ -927,7 +972,7 @@ namespace dl
                     filePath = "C:\\Users\\" + Environment.UserName.ToString() + "\\Downloads" + "\\" + filePath;
                     indexes.Clear();
                 }
-                else 
+                else
                 {
                     filePath = GetName();
                     filePath = "C:\\Users\\" + Environment.UserName.ToString() + "\\Downloads" + "\\" + filePath;
@@ -1071,7 +1116,7 @@ namespace dl
                 {
                     url = String.Empty;
                     Download.DownloadFile();
-
+                    cont = "";
                     cont = Console.ReadLine();
                     WebException = false;
                     cont = cont.ToLower();
