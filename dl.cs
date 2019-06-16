@@ -512,6 +512,7 @@ namespace dl
             {
                 Console.WriteLine("Enter a valid URL");
                 url = Console.ReadLine();
+                protocolWordlength = url.IndexOf(':');
                 protocol = (protocolWordlength > 0) ? url.Substring(0, protocolWordlength) : "";
             }
 
@@ -558,7 +559,7 @@ namespace dl
                         Console.WriteLine("Do you want to Download Latest Release? Yes/No");
                         masterDownload = Console.ReadLine().ToLower();
 
-                        if (masterDownload == "yes" || masterDownload == "yes")
+                        if (masterDownload == "yes" || masterDownload == "y")
                         {
                             resultingurl = GetReleaseUrl();
                             if (resultingurl == "" || resultingurl == null)
