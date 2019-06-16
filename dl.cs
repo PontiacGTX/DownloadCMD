@@ -1,4 +1,4 @@
-using System;
+sing System;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
@@ -149,6 +149,10 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension != "") ? true : false;
+            //"." + url.Substring(extPos, url.Length - extPos).ToString();
+            //string inList = null;
+            //inList = extensionList.SingleOrDefault(s => s.Equals(foundExtension));
+            //bool MatchesExtension = inList!=null;
 
             if (ExtensioninURL)
             {
@@ -381,6 +385,7 @@ namespace dl
             string zipName = @"C:\Users\" + Environment.UserName.ToString() + $"\\Downloads\\{targetpath.Substring(targetpath.LastIndexOf("\\") + 1, targetpath.Length - (targetpath.LastIndexOf("\\") + 1))}.zip";
             ZipFile.CreateFromDirectory(targetpath, zipName);
             Console.WriteLine($"Files Saved at: \n{targetpath} \n{zipName}");
+            newFile = zipName;
         }
 
         public string GetReleaseUrl()
@@ -602,6 +607,8 @@ namespace dl
                             {
                                 filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                             }
+
+                            //DownloadRelease
                         }
                         else
                         {
@@ -689,6 +696,8 @@ namespace dl
                     {
                         filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                     }
+
+                    //DownloadRelease
                 }
 
                 resultingurl = "";
@@ -745,6 +754,7 @@ namespace dl
                 }
                 File.Delete(redditJsonpath);
 
+                //dataObject.data.url = _object.data.url + "/";
 
                 if (dataObject.is_video)
                 {
@@ -758,6 +768,8 @@ namespace dl
 
 
 
+                        //var first = GetIndex(url, '/', 7);
+                        //var last = (GetIndex(url, '/', 8) > -1) ? (GetIndex(url, '/', 8)) : url.Length;
 
                         var mediaPath = "";
 
@@ -1107,13 +1119,14 @@ namespace dl
                 catch (WebException ex)
                 {
                     string exception = ex.ToString();
+                    //    ex.InnerException.ToString();   
                     Console.WriteLine(exception);
                     WebException = true;
                 }
             }
 
             url = String.Empty;
-            newFile = "";
+            
             rContentDownloaded = false;
             imgurContentDownloaded = false;
             gitTreeDownload = false;
@@ -1123,6 +1136,7 @@ namespace dl
                 OpenFolder();
             }
 
+            newFile = "";
             WebException = false;
             Console.WriteLine("Do you want to download another file?");
 
@@ -1225,4 +1239,3 @@ namespace dl
         }
     }
 }
-
