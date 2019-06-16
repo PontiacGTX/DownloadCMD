@@ -8,8 +8,16 @@ build instruction:
 requires references for: 
 
 System.IO.Compression 
+
 System.IO.Compression.FileSystem
+
 System.Net.Http
+
 System.Net.Http.Formatting
+
 System.Xml
+
+System.Xml.Linq
+
 Newtonsoft.Json
+
