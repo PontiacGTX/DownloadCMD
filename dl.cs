@@ -84,6 +84,7 @@ namespace dl
 
                 FtpWebRequest request = (FtpWebRequest)WebRequest.Create(url);
                 Console.WriteLine("Does FTP access require user/passsword?");
+                requirement = Console.ReadLine();
                 if (requirement.Contains("y") || requirement.Contains("yes"))
                 {
                     Console.WriteLine("Enter a username for ftp"); usernftp = Console.ReadLine();
