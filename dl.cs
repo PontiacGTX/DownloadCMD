@@ -149,10 +149,6 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension != "") ? true : false;
-            //"." + url.Substring(extPos, url.Length - extPos).ToString();
-            //string inList = null;
-            //inList = extensionList.SingleOrDefault(s => s.Equals(foundExtension));
-            //bool MatchesExtension = inList!=null;
 
             if (ExtensioninURL)
             {
@@ -276,6 +272,115 @@ namespace dl
             }
 
             extension = Path.GetExtension(temp);
+        }
+
+        public void DownloadGitTree()
+        {
+            Dictionary<string, int> dict = new Dictionary<string, int>();
+            string githuburl = "https://github.com";
+            string rawgiturl = "https://raw.githubusercontent.com";
+            string treepath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + url.Substring(url.LastIndexOf("/") + 1, url.Length - (url.LastIndexOf("/") + 1)) + '\\';
+
+            string treeUrl = url;
+            string template = "class=\"css-truncate css-truncate-target\"><a class=\"js-navigation-open\"";
+            //string template = "<span class=\"css-truncatecss-truncate-target\">";
+            client.DownloadFile(url, "branchfolder.txt");
+            List<string> content = new List<string>();
+            List<string> directory = new List<string>();
+            StreamReader rdFile;
+            string line = "";
+            string targetpath = treepath.Substring(0, treepath.Length - 1);
+            bool hasRoot = true;
+            int counter = 0;
+            //int nDepthPath = 6;
+            int currentSub = url.Count(x => x == '/') - 2;
+            string temp = "";
+            int diff = 0;
+            while (hasRoot)
+            {
+                if (!File.Exists("branchfolder.txt"))
+                    client.DownloadFile(treeUrl, "branchfolder.txt");
+                else
+                {
+                    File.Delete("branchfolder.txt");
+                    client.DownloadFile(treeUrl, "branchfolder.txt");
+                }
+
+                if (!Directory.Exists(treepath))
+                    Directory.CreateDirectory(treepath);
+
+                using (rdFile = new StreamReader("branchfolder.txt"))
+                {
+                    while ((line = rdFile.ReadLine()) != null)
+                    {
+
+                        if (line.Contains(template))
+                        {
+                            line = line.Trim();
+                            if (line.Length > 47)
+                            {
+                                line = line.Substring(GetIndex(line, '\"', 9) + 1, GetIndex(line, '\"', 10) - (GetIndex(line, '\"', 9) + 1));
+
+                                if (line.Contains("/blob/"))
+                                {
+                                    temp = rawgiturl + line;
+                                    temp = temp.Replace("/blob/", "/");
+                                    client.DownloadFile(temp, treepath + line.Substring(line.LastIndexOf("/") + 1, line.Length - (line.LastIndexOf("/") + 1)));
+
+                                }
+                                else
+                                {
+                                    temp = githuburl + line;
+                                    directory.Add(githuburl + line);
+                                    diff = currentSub - line.Count(x => x == '/');
+                                    dict.Add(temp, diff);
+                                }
+
+                            }
+                        }
+                    }
+                }
+
+
+                if (dict.Keys.Count > 0)
+                {
+
+                    dict.OrderBy(x => x.Value);
+
+                    if (counter == 0)
+                    {
+                        treepath += dict.Keys.ElementAt(counter).Substring(dict.Keys.ElementAt(counter).LastIndexOf('/') + 1, dict.Keys.ElementAt(counter).Length - (dict.Keys.ElementAt(counter).LastIndexOf('/') + 1)) + '\\';
+                        treeUrl = dict.Keys.ElementAt(counter);
+                    }
+                    else
+                    {
+                        if (dict.Values.ElementAt(counter) == dict.Values.ElementAt(counter - 1))
+                        {
+                            treeUrl = dict.Keys.ElementAt(counter);
+                        }
+                        else
+                        {
+                            treepath += dict.Keys.ElementAt(counter).Substring(dict.Keys.ElementAt(counter).LastIndexOf('/') + 1, dict.Keys.ElementAt(counter).Length - (dict.Keys.ElementAt(counter).LastIndexOf('/') + 1)) + '\\';
+                            treeUrl = dict.Keys.ElementAt(counter);
+                        }
+
+                    }
+
+                    dict.Remove(dict.Keys.ElementAt(counter));
+                    hasRoot = true;
+                    counter++;
+                }
+                else
+                {
+                    hasRoot = false;
+                }
+
+
+            }
+            File.Delete("branchfolder.txt");
+            string zipName = @"C:\Users\" + Environment.UserName.ToString() + $"\\Downloads\\{targetpath.Substring(targetpath.LastIndexOf("\\") + 1, targetpath.Length - (targetpath.LastIndexOf("\\") + 1))}.zip";
+            ZipFile.CreateFromDirectory(targetpath, zipName);
+            Console.WriteLine($"Files Saved at: \n{targetpath} \n{zipName}");
         }
 
         public string GetReleaseUrl()
@@ -414,14 +519,14 @@ namespace dl
             int pos = 0;
             if (url.Contains("gist.github"))
             {
-                string temp,filename,extension;
-                temp = ""; filename = "";extension = "";
-                GetGistUrl(ref temp,ref filename,ref extension);
+                string temp, filename, extension;
+                temp = ""; filename = ""; extension = "";
+                GetGistUrl(ref temp, ref filename, ref extension);
                 url = temp;
                 filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + filename + extension;
 
             }
-            else if (url.Contains("github") && !url.Contains("gist.github"))
+            else if (url.Contains("github") && !url.Contains("gist.github") && !url.Contains("/tree/"))
             {
                 url = (GetIndex(url, '/', 5) > -1) ? url : url += '/';
 
@@ -430,7 +535,7 @@ namespace dl
                 if (!(releasesInUrl == "releases"))
                 {
                     string projectName = "";
-                    
+
 
                     if (url.Contains("/blob/"))
                     {
@@ -451,7 +556,7 @@ namespace dl
                     {
 
                         Console.WriteLine("Do you want to Download Latest Release? Yes/No");
-                        masterDownload= Console.ReadLine().ToLower();
+                        masterDownload = Console.ReadLine().ToLower();
 
                         if (masterDownload == "yes" || masterDownload == "yes")
                         {
@@ -496,8 +601,6 @@ namespace dl
                             {
                                 filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                             }
-
-                            //DownloadRelease
                         }
                         else
                         {
@@ -543,7 +646,7 @@ namespace dl
                             }
                             masterDownload = "";
                         }
-                        
+
                     }
                 }
                 else
@@ -570,8 +673,6 @@ namespace dl
                     maxprojectIndex = GetIndex(url, '/', 6);
 
 
-
-
                     maxprojectIndex = maxprojectIndex - (minprojectIndex + 1);
 
                     string projectName = "";
@@ -587,13 +688,16 @@ namespace dl
                     {
                         filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + @"\" + projectName + "-master.zip";
                     }
-
-                    //DownloadRelease
                 }
 
                 resultingurl = "";
                 masterDownload = "";
                 releasesInUrl = "";
+            }
+            else if (url.Contains("github") && !url.Contains("gist.github") && url.Contains("/tree/"))
+            {
+                DownloadGitTree();
+                gitTreeDownload = true;
             }
             else if (url.Contains("reddit"))
             {
@@ -640,7 +744,6 @@ namespace dl
                 }
                 File.Delete(redditJsonpath);
 
-                //dataObject.data.url = _object.data.url + "/";
 
                 if (dataObject.is_video)
                 {
@@ -654,8 +757,6 @@ namespace dl
 
 
 
-                        //var first = GetIndex(url, '/', 7);
-                        //var last = (GetIndex(url, '/', 8) > -1) ? (GetIndex(url, '/', 8)) : url.Length;
 
                         var mediaPath = "";
 
@@ -990,7 +1091,7 @@ namespace dl
             {
                 DownloadFTP(filePath);
             }
-            else if (((url.Contains("http") && rContentDownloaded.Equals(false)) && imgurContentDownloaded == false )|| ((url.Contains("https")) && rContentDownloaded==false && imgurContentDownloaded ==false))
+            else if (((url.Contains("http") && rContentDownloaded.Equals(false)) && imgurContentDownloaded == false && gitTreeDownload==false )|| ((url.Contains("https")) && rContentDownloaded==false && imgurContentDownloaded ==false && gitTreeDownload == false))
             {
                 try
                 {
@@ -1005,7 +1106,6 @@ namespace dl
                 catch (WebException ex)
                 {
                     string exception = ex.ToString();
-                    //    ex.InnerException.ToString();   
                     Console.WriteLine(exception);
                     WebException = true;
                 }
@@ -1015,6 +1115,7 @@ namespace dl
             newFile = "";
             rContentDownloaded = false;
             imgurContentDownloaded = false;
+            gitTreeDownload = false;
 
             if (!WebException &&   (File.Exists(filePath)  || File.Exists(newFile)))
             {
@@ -1121,3 +1222,6 @@ namespace dl
             }
 
         }
+    }
+}
+
