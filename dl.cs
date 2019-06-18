@@ -281,26 +281,29 @@ namespace dl
 
         public void DownloadGitTree()
         {
-            Dictionary<string, int> dict = new Dictionary<string, int>();
+           
+            List<string> dictURLs = new List<string>();
+            List<int> dictDepth = new List<int>();
+            Dictionary<string,int> dict= new Dictionary<string, int>();
             string githuburl = "https://github.com";
             string rawgiturl = "https://raw.githubusercontent.com";
-            string treepath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + url.Substring(url.LastIndexOf("/") + 1, url.Length - (url.LastIndexOf("/") + 1)) + '\\';
+            string treepath= @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + url.Substring(url.LastIndexOf("/") + 1, url.Length - (url.LastIndexOf("/") + 1))+'\\';
 
             string treeUrl = url;
             string template = "class=\"css-truncate css-truncate-target\"><a class=\"js-navigation-open\"";
             //string template = "<span class=\"css-truncatecss-truncate-target\">";
-            client.DownloadFile(url, "branchfolder.txt");
+            client.DownloadFile(url,"branchfolder.txt");
             List<string> content = new List<string>();
-            List<string> directory = new List<string>();
             StreamReader rdFile;
             string line = "";
-            string targetpath = treepath.Substring(0, treepath.Length - 1);
+            string targetpath = treepath.Substring(0,treepath.Length-1);
             bool hasRoot = true;
             int counter = 0;
             //int nDepthPath = 6;
-            int currentSub = url.Count(x => x == '/') - 2;
+            int currentSub=url.Count(x => x == '/');
             string temp = "";
             int diff = 0;
+            
             while (hasRoot)
             {
                 if (!File.Exists("branchfolder.txt"))
@@ -336,8 +339,9 @@ namespace dl
                                 else
                                 {
                                     temp = githuburl + line;
-                                    directory.Add(githuburl + line);
-                                    diff = currentSub - line.Count(x => x == '/');
+                                    diff= temp.Count(x=>x=='/') - currentSub;
+                                    dictURLs.Add(temp);
+                                    dictDepth.Add(diff);
                                     dict.Add(temp, diff);
                                 }
 
@@ -347,33 +351,33 @@ namespace dl
                 }
 
 
-                if (dict.Keys.Count > 0)
+                 if (dictURLs.Count > 0 && counter < dictURLs.Count)
                 {
-
-                    dict.OrderBy(x => x.Value);
 
                     if (counter == 0)
                     {
-                        treepath += dict.Keys.ElementAt(counter).Substring(dict.Keys.ElementAt(counter).LastIndexOf('/') + 1, dict.Keys.ElementAt(counter).Length - (dict.Keys.ElementAt(counter).LastIndexOf('/') + 1)) + '\\';
-                        treeUrl = dict.Keys.ElementAt(counter);
+                        treepath += dictURLs.ElementAt(counter).Substring(dictURLs.ElementAt(counter).LastIndexOf('/') + 1, dictURLs.ElementAt(counter).Length - (dictURLs.ElementAt(counter).LastIndexOf('/') + 1)) + '\\';
+                        treeUrl = dictURLs.ElementAt(counter);
                     }
                     else
                     {
-                        if (dict.Values.ElementAt(counter) == dict.Values.ElementAt(counter - 1))
+                        if (dictDepth.ElementAt(counter) == dictDepth.ElementAt(counter - 1))
                         {
-                            treeUrl = dict.Keys.ElementAt(counter);
+                            //int rootDifference =dictURLs.ElementAt(0).Count(x => x == '/') - url.Count(x => x == '/');
+                            treepath = treepath.Substring(0, GetIndex(treepath,'\\',treepath.Count(x=>x=='\\') - dictDepth.ElementAt(count))) + '\\';
+                            treeUrl = dictURLs.ElementAt(0);
                         }
                         else
                         {
-                            treepath += dict.Keys.ElementAt(counter).Substring(dict.Keys.ElementAt(counter).LastIndexOf('/') + 1, dict.Keys.ElementAt(counter).Length - (dict.Keys.ElementAt(counter).LastIndexOf('/') + 1)) + '\\';
-                            treeUrl = dict.Keys.ElementAt(counter);
+                            treepath += dictURLs.ElementAt(0).Substring(dictURLs.ElementAt(0).LastIndexOf('/') + 1, dictURLs.ElementAt(0).Length - (dictURLs.ElementAt(0).LastIndexOf('/') + 1)) + '\\';
+                            treeUrl = dictURLs.ElementAt(0);
                         }
 
                     }
 
-                    dict.Remove(dict.Keys.ElementAt(counter));
-                    hasRoot = true;
-                    counter++;
+                   dictURLs.Remove(dictURLs.ElementAt(0));
+                   hasRoot = true;
+                   counter++;
                 }
                 else
                 {
@@ -382,9 +386,11 @@ namespace dl
 
 
             }
+            
             File.Delete("branchfolder.txt");
             string zipName = @"C:\Users\" + Environment.UserName.ToString() + $"\\Downloads\\{targetpath.Substring(targetpath.LastIndexOf("\\") + 1, targetpath.Length - (targetpath.LastIndexOf("\\") + 1))}.zip";
             ZipFile.CreateFromDirectory(targetpath, zipName);
+            dictDepth.Clear();
             Console.WriteLine($"Files Saved at: \n{targetpath} \n{zipName}");
             newFile = zipName;
         }
