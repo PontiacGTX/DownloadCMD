@@ -91,7 +91,6 @@ namespace dl
                     Console.WriteLine("Enter password for ftp"); userpassftp = Console.ReadLine();
                     request.Credentials = new NetworkCredential(usernftp, userpassftp);
                 }
-                request.Credentials = new NetworkCredential(usernftp, userpassftp);
                 request.Method = WebRequestMethods.Ftp.DownloadFile;
 
                 Console.WriteLine($"Downloading File");
