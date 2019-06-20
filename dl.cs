@@ -250,26 +250,50 @@ namespace dl
             string gistID = url.Substring(gistIndexBegin + 1, gistIndexEnd - (gistIndexBegin + 1));
 
             gistAPI = gistAPIUrl.Replace(":gist_id", gistID);
-            GistObject gistResult = new GistObject();
+            GistRootobject gistResult = new GistRootobject();
 
+            History gistHistory = new History();
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(gistAPI);
             request.UserAgent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36";
-            request.Timeout = 5000;
+            request.Timeout = 10000;
             request.Method = WebRequestMethods.Http.Get;
             var gistResponse = request.GetResponse().GetResponseStream();
             StreamReader rd = new StreamReader(gistResponse);
             var responseStr = rd.ReadToEnd();
-            int beginIndex = responseStr.IndexOf("\"raw_url\": \"");
-            int endIndex = responseStr.IndexOf("\"size\":");
-            string temp = responseStr.Substring(beginIndex,((endIndex)- (beginIndex )));
+            
+            var dynObj = JsonConvert.DeserializeObject<Dictionary<String, dynamic>>(responseStr);
+            int index = -1;
+            for (int i = 0; i < dynObj.Keys.Count; i++)
+            {
+                if (dynObj.Keys.ElementAt(i) == "history")
+                {
+                    index = i;
+                }
+            }
+            string somestr = Convert.ToString(dynObj.Values.ElementAt(index));
+            string gistId = url.Substring(url.LastIndexOf('/')+1,url.Length-(url.LastIndexOf('/')+1));
 
-            beginIndex = GetIndex(temp,'"',3);
-            endIndex = GetIndex(temp, '"', 4);
-            temp = temp.Substring(beginIndex+1, endIndex - (beginIndex+1));
+            string[] array = somestr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+            string temp = "";
+            foreach (String line in array)
+            {
+                if (line.Contains("\"url\": \""))
+                {
+                    if (line.Contains(gistId))
+                    {
+                        temp = line.Substring(GetIndex(line, '"', 3) + 1, GetIndex(line, '"', 4) - (GetIndex(line, '"', 3) + 1));
+                    }
+                        
+
+                }
+            }
+           
+            
+            temp = url +"/archive/"+ temp.Substring(temp.LastIndexOf('/') + 1, temp.Length - (temp.LastIndexOf('/') + 1)) + ".zip"; 
+
             localurl = temp;
             
-
             if (fileName == "")
             {
                 fileName = temp.Substring(temp.LastIndexOf('/')+1, temp.LastIndexOf('.') - (temp.LastIndexOf('/')+1));
@@ -539,6 +563,10 @@ namespace dl
                 GetGistUrl(ref temp, ref filename, ref extension);
                 url = temp;
                 filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + filename + extension;
+                if (File.Exists(filePath))
+                {
+                    filePath = Rename(filePath);
+                }
 
             }
             else if (url.Contains("github") && !url.Contains("gist.github") && !url.Contains("/tree/"))
