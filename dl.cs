@@ -1,4 +1,4 @@
-using System;
+sing System;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
@@ -281,29 +281,29 @@ namespace dl
 
         public void DownloadGitTree()
         {
-           
+
             List<string> dictURLs = new List<string>();
             List<int> dictDepth = new List<int>();
-            Dictionary<string,int> dict= new Dictionary<string, int>();
+            Dictionary<string, int> dict = new Dictionary<string, int>();
             string githuburl = "https://github.com";
             string rawgiturl = "https://raw.githubusercontent.com";
-            string treepath= @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + url.Substring(url.LastIndexOf("/") + 1, url.Length - (url.LastIndexOf("/") + 1))+'\\';
+            string treepath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + url.Substring(url.LastIndexOf("/") + 1, url.Length - (url.LastIndexOf("/") + 1)) + '\\';
 
             string treeUrl = url;
             string template = "class=\"css-truncate css-truncate-target\"><a class=\"js-navigation-open\"";
             //string template = "<span class=\"css-truncatecss-truncate-target\">";
-            client.DownloadFile(url,"branchfolder.txt");
+            client.DownloadFile(url, "branchfolder.txt");
             List<string> content = new List<string>();
             StreamReader rdFile;
             string line = "";
-            string targetpath = treepath.Substring(0,treepath.Length-1);
+            string targetpath = treepath.Substring(0, treepath.Length - 1);
             bool hasRoot = true;
             int counter = 0;
             //int nDepthPath = 6;
-            int currentSub=url.Count(x => x == '/');
+            int currentSub = url.Count(x => x == '/');
             string temp = "";
             int diff = 0;
-            
+
             while (hasRoot)
             {
                 if (!File.Exists("branchfolder.txt"))
@@ -339,7 +339,7 @@ namespace dl
                                 else
                                 {
                                     temp = githuburl + line;
-                                    diff= temp.Count(x=>x=='/') - currentSub;
+                                    diff = temp.Count(x => x == '/') - currentSub;
                                     dictURLs.Add(temp);
                                     dictDepth.Add(diff);
                                     dict.Add(temp, diff);
@@ -351,7 +351,7 @@ namespace dl
                 }
 
 
-                 if (dictURLs.Count > 0 && counter < dictURLs.Count)
+                if (dictURLs.Count > 0 && counter < dictURLs.Count)
                 {
 
                     if (counter == 0)
@@ -363,8 +363,8 @@ namespace dl
                     {
                         if (dictDepth.ElementAt(counter) == dictDepth.ElementAt(counter - 1))
                         {
-                            //int rootDifference =dictURLs.ElementAt(0).Count(x => x == '/') - url.Count(x => x == '/');
-                            treepath = treepath.Substring(0, GetIndex(treepath,'\\',treepath.Count(x=>x=='\\') - dictDepth.ElementAt(count))) + '\\';
+                           // int rootDifference = dictURLs.ElementAt(0).Count(x => x == '/') - url.Count(x => x == '/');
+                            treepath = treepath.Substring(0, GetIndex(treepath, '\\', treepath.Count(x => x == '\\') - dictDepth.ElementAt(count))) + '\\';
                             treeUrl = dictURLs.ElementAt(0);
                         }
                         else
@@ -375,9 +375,9 @@ namespace dl
 
                     }
 
-                   dictURLs.Remove(dictURLs.ElementAt(0));
-                   hasRoot = true;
-                   counter++;
+                    dictURLs.Remove(dictURLs.ElementAt(0));
+                    hasRoot = true;
+                    counter++;
                 }
                 else
                 {
@@ -386,7 +386,7 @@ namespace dl
 
 
             }
-            
+
             File.Delete("branchfolder.txt");
             string zipName = @"C:\Users\" + Environment.UserName.ToString() + $"\\Downloads\\{targetpath.Substring(targetpath.LastIndexOf("\\") + 1, targetpath.Length - (targetpath.LastIndexOf("\\") + 1))}.zip";
             ZipFile.CreateFromDirectory(targetpath, zipName);
@@ -405,19 +405,22 @@ namespace dl
 
 
             GitHubRootobject results = new GitHubRootobject();
-
+            
             try
             {
-                HttpClient client = new HttpClient();
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(githubAPIURL);
+                request.UserAgent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36";
+                request.Method = WebRequestMethods.Http.Get;
+                request.Timeout = 5000;
 
-                client.BaseAddress = new Uri(githubAPI);
-                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36");
-                HttpResponseMessage response = client.PostAsJsonAsync(githubAPI, results).Result;
+                HttpWebResponse result = (HttpWebResponse)request.GetResponse();
+                var responseObject = result.GetResponseStream();
 
-                response.EnsureSuccessStatusCode();
+                StreamReader rd = new StreamReader(responseObject);
+                var jsonString = rd.ReadToEnd();
 
-                var compressedFiles = response.Content.ReadAsAsync<IList<GitHubRootobject>>().GetAwaiter().GetResult();
-
+                var compressedFiles = JsonConvert.DeserializeObject<IList<GitHubRootobject>>(jsonString); //response.Content.ReadAsAsync<IList<GitHubRootobject>>().GetAwaiter().GetResult();
+                
                 List<GitHubRootobject> downloadElements = compressedFiles.ToList();
                 
 
