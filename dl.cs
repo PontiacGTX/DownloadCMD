@@ -250,9 +250,6 @@ namespace dl
             string gistID = url.Substring(gistIndexBegin + 1, gistIndexEnd - (gistIndexBegin + 1));
 
             gistAPI = gistAPIUrl.Replace(":gist_id", gistID);
-            GistRootobject gistResult = new GistRootobject();
-
-            History gistHistory = new History();
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(gistAPI);
             request.UserAgent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36";
