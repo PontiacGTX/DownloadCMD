@@ -1061,7 +1061,9 @@ namespace dl
                     selectedItem = imgurResultImages;
                 }
 
-
+                if (selection.Any(x=>x==-1))
+                selection.RemoveAt(selection.FindIndex(element=>element==-1));
+                
                 using (WebClient imgurdownloadclient = new WebClient())
                 {
 
