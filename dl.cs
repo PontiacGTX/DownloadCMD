@@ -12,7 +12,7 @@ using System.Net.Http.Formatting;
 using System.Net.Http;
 using Newtonsoft.Json;
 using System.IO.Compression;
-
+using System.Text.RegularExpressions;
 
 namespace dl
 {
@@ -248,7 +248,6 @@ namespace dl
             int gistIndexBegin = GetIndex(url, '/', 4);
             int gistIndexEnd = url.IndexOf('#', 1) > 0 ? url.IndexOf('#', 1) : url.Length;
             string gistID = url.Substring(gistIndexBegin + 1, gistIndexEnd - (gistIndexBegin + 1));
-
             gistAPI = gistAPIUrl.Replace(":gist_id", gistID);
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(gistAPI);
@@ -289,8 +288,10 @@ namespace dl
             
             temp = url +"/archive/"+ temp.Substring(temp.LastIndexOf('/') + 1, temp.Length - (temp.LastIndexOf('/') + 1)) + ".zip"; 
 
+           
             localurl = temp;
             
+
             if (fileName == "")
             {
                 fileName = temp.Substring(temp.LastIndexOf('/')+1, temp.LastIndexOf('.') - (temp.LastIndexOf('/')+1));
@@ -439,6 +440,13 @@ namespace dl
                 StreamReader rd = new StreamReader(responseObject);
                 var jsonString = rd.ReadToEnd();
 
+                //HttpClient client = new HttpClient();
+                //client.BaseAddress = new Uri(githubAPIURL); 
+                //client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36");
+                //HttpResponseMessage response = client.GetAsync(githubAPI).GetAwaiter().GetResult();
+                //client.PostAsJsonAsync(githubAPI, results).Result;
+                //response.EnsureSuccessStatusCode();
+                    
                 var compressedFiles = JsonConvert.DeserializeObject<IList<GitHubRootobject>>(jsonString); //response.Content.ReadAsAsync<IList<GitHubRootobject>>().GetAwaiter().GetResult();
                 
                 List<GitHubRootobject> downloadElements = compressedFiles.ToList();
@@ -564,7 +572,6 @@ namespace dl
                 {
                     filePath = Rename(filePath);
                 }
-
             }
             else if (url.Contains("github") && !url.Contains("gist.github") && !url.Contains("/tree/"))
             {
@@ -770,7 +777,7 @@ namespace dl
 
                 var dataObjectvideoURL = new Reddit_Video();
                 var dataObject = new Data1();
-
+                string title = "";
 
                 dataObjectvideoURL.fallback_url = String.Empty;
 
@@ -778,6 +785,9 @@ namespace dl
                 {
                     if (!String.IsNullOrEmpty(_objectData.data.secure_media.reddit_video.fallback_url))
                         dataObjectvideoURL.fallback_url = _objectData.data.secure_media.reddit_video.fallback_url;
+
+                    if (!String.IsNullOrEmpty(_objectData.data.title))
+                        title = _objectData.data.title;
 
                     if (_objectData.data.is_video != null)
                         dataObject.is_video = _objectData.data.is_video;
@@ -787,7 +797,8 @@ namespace dl
 
                 }
                 File.Delete(redditJsonpath);
-
+                title = Regex.Replace(title, @"\p{Cs}", "");
+                title = title.Replace(" ",string.Empty);
                 //dataObject.data.url = _object.data.url + "/";
 
                 if (dataObject.is_video)
@@ -818,11 +829,13 @@ namespace dl
                             ShowElements(extensionPos);
                             Console.WriteLine("Select the extension of the video");
                             int position = int.Parse(Console.ReadLine());
-                            mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + dataObject.title + extensionList[position - 1];
+
+                            mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + "video" + extensionList[position - 1];
                         }
                         else if (extensionPos.Count == 1)
                         {
-                            mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + dataObject.title + extensionList[extensionPos[0]];
+                            mediaPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + "video" + extensionList[extensionPos[0]];
+
                         }
                         else
                         {
@@ -849,7 +862,7 @@ namespace dl
                             var audioURL = addtourl.Replace(mediaURL.Substring(start, end - start).ToString(), "audio").ToString();
                             Console.WriteLine("Downloading Audio");
                             var audioPath = "";
-                            audioPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + dataObject.title + "_audio.mp4";
+                            audioPath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\_audio.mp4";
                             if (File.Exists(mediaPath))
                             {
                                 audioPath = Rename(audioPath);
@@ -890,11 +903,12 @@ namespace dl
                             {
                                 ZipFile.ExtractToDirectory(ffmpegfolder, dirExtract);
                             }
-
+                            
                             ffmpegfolder = dirExtract + "ffmpeg-20190227-85051fe-win64-static\\bin\\ffmpeg.exe";
 
+                           
 
-                            newFile = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + dataObject.title + "RedditVideo.mp4";
+                            newFile = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + $"{(string.IsNullOrEmpty(title) ? "redditvideo":title)}.mp4";
 
                             if (File.Exists(newFile))
                             {
@@ -941,13 +955,13 @@ namespace dl
                     if (dataObject.media.reddit_video.is_gif)
                     {
                         url = dataObject.media.reddit_video.fallback_url;
-                        filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + dataObject.title + ".gif";
+                        filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + dataObject.title + ".gif";
 
                     }
                     else
                     {
                         url = dataObject.url;
-                        filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads" + dataObject.title + GetExt();
+                        filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + dataObject.title + GetExt();
 
                     }
 
@@ -1061,9 +1075,9 @@ namespace dl
                     selectedItem = imgurResultImages;
                 }
 
-                if (selection.Any(x=>x==-1))
-                selection.RemoveAt(selection.FindIndex(element=>element==-1));
-                
+                if (selection.Any(x => x == -1))
+                    selection.RemoveAt(selection.FindIndex(element => element == -1));
+
                 using (WebClient imgurdownloadclient = new WebClient())
                 {
 
