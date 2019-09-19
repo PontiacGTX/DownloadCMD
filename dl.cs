@@ -1,4 +1,4 @@
-using System;
+sing System;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
@@ -780,21 +780,40 @@ namespace dl
                 string title = "";
 
                 dataObjectvideoURL.fallback_url = String.Empty;
-
-                foreach (Child _objectData in foundElements[0].data.children)
+                if (dataObject.is_video)
                 {
-                    if (!String.IsNullOrEmpty(_objectData.data.secure_media.reddit_video.fallback_url))
-                        dataObjectvideoURL.fallback_url = _objectData.data.secure_media.reddit_video.fallback_url;
+                    foreach (Child _objectData in foundElements[0].data.children)
+                    {
+                        if (!String.IsNullOrEmpty(_objectData.data.secure_media.reddit_video.fallback_url))
+                            dataObjectvideoURL.fallback_url = _objectData.data.secure_media.reddit_video.fallback_url;
 
-                    if (!String.IsNullOrEmpty(_objectData.data.title))
-                        title = _objectData.data.title;
+                        if (!String.IsNullOrEmpty(_objectData.data.title))
+                            title = _objectData.data.title;
 
-                    if (_objectData.data.is_video != null)
-                        dataObject.is_video = _objectData.data.is_video;
+                        if (_objectData.data.is_video != null)
+                            dataObject.is_video = _objectData.data.is_video;
 
-                    if (_objectData.data.url != null)
-                        dataObject.url = _objectData.data.url;
+                        if (_objectData.data.url != null)
+                            dataObject.url = _objectData.data.url;
 
+                    }
+                }
+                else
+                {
+                    foreach (var _objectData in foundElements[0].data.children)
+                    {
+                        
+                        
+                        if (!String.IsNullOrEmpty(_objectData.data.title))
+                            title = _objectData.data.title;
+
+                        if (!string.IsNullOrEmpty(_objectData.data.url))
+                            dataObject.url = _objectData.data.url;
+                        if (!string.IsNullOrEmpty(_objectData.data.title))
+                            dataObject.title = _objectData.data.title;
+
+
+                    }
                 }
                 File.Delete(redditJsonpath);
                 title = Regex.Replace(title, @"\p{Cs}", "");
@@ -952,7 +971,7 @@ namespace dl
                     //var imagefirst = GetIndex(url, '/', 7);
                     //var imagelast = (GetIndex(url, '/', 8) > -1) ? (GetIndex(url, '/', 8)) : url.Length;
 
-                    if (dataObject.media.reddit_video.is_gif)
+                    if (Path.GetExtension(dataObject.url)==".gif")
                     {
                         url = dataObject.media.reddit_video.fallback_url;
                         filePath = @"C:\Users\" + Environment.UserName.ToString() + @"\Downloads\" + dataObject.title + ".gif";
@@ -1204,15 +1223,16 @@ namespace dl
             bool validation1 = implicitURL.Contains("http");
             bool validation2 = implicitURL.Contains("www");
             bool validation3 = implicitURL.Contains("ftp");
+            bool validation4 = implicitURL.Contains("-baseurl");
 
-            if (firstExe && (validation1 || validation2 || validation3))
+            if (firstExe && (validation1 || validation2 || validation3) && validation4)
             {
 
                 if (implicitURL != "")
                 {
                     try
                     {
-                        if (firstExe && (validation1 || validation2 || validation3))
+                        if (firstExe && (validation1 || validation2 || validation3) && !validation4)
                         {
 
                             if (validation1 || validation2 || validation3)
@@ -1248,6 +1268,12 @@ namespace dl
                                 validImplicit = false;
                             }
 
+                        }
+                        else if (validation4)
+                        {
+                            GetResponse(args);
+
+                            validImplicit = false;
                         }
                         if (validImplicit)
                         {
@@ -1286,6 +1312,57 @@ namespace dl
                 }
             }
 
+        }
+
+        private static void GetResponse(string[] args)
+        {
+            string[] arguments = new string[args.Count()];
+
+            int i = 0;
+            string baseurl = args.Where(str => str.Contains("-baseurl")).FirstOrDefault();
+            arguments = args.Where(str => str.Contains("-arg") || str.Contains("-args")).ToArray();
+            string method = args.Where(str => str.Contains("-method")).FirstOrDefault();
+            Array.Sort(arguments);
+
+            while (i < arguments.Count())
+            {
+                int begin = GetIndex(baseurl, '{', 1);
+                int len = GetIndex(baseurl, '}', 1) - begin + 1;
+                var temp = baseurl.Substring(begin, len);
+                begin = GetIndex(arguments[i], '-', 1);
+                len = (GetIndex(arguments[i], '=', 1)) - begin + 1;
+                begin = len;
+                len = arguments[i].Length - begin;
+                var newsub = arguments[i].Substring(begin, len);
+                baseurl = baseurl.Replace(temp, newsub);
+                i++;
+            }
+            baseurl = baseurl.Substring(GetIndex(baseurl, '=', 1) + 1, baseurl.Length - (GetIndex(baseurl, '=', 1) + 1));
+           
+
+
+            method = method.Substring(GetIndex(method, '=', 1) + 1, method.Length - (GetIndex(method, '=', 1) + 1));
+
+            if (method.ToLower() == "get")
+                method = "GET";
+            if (method.ToLower() == "put")
+                method = "PUT";
+            if (method.ToLower() == "POST")
+                method = "POST";
+
+            Console.WriteLine($"It will make a {method} http request to " + baseurl + '\n' );
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(baseurl);
+            request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36";
+            request.Timeout = 10000;
+            request.Method = method;
+            String response = "";
+            var Response = request.GetResponse().GetResponseStream();
+            using (StreamReader rd = new StreamReader(Response))
+            {
+               response  = rd.ReadToEnd();
+            }
+            Console.WriteLine(response);
+            Console.ReadKey();
         }
     }
 }
