@@ -1210,6 +1210,85 @@ namespace dl
             Console.WriteLine("Do you want to download another file?");
 
         }
+        
+        private static void GetResponse(string[] args)
+        {
+            string[] arguments = new string[args.Count()];
+
+            int i = 0;
+            string baseurl = args.Where(str => str.Contains("-baseurl")).FirstOrDefault();
+            arguments = args.Where(str => str.Contains("-arg") || str.Contains("-args")).ToArray();
+            string method = args.Where(str => str.Contains("-method")).FirstOrDefault();
+            string[] headerContent = args.Where(str => str.Contains("-header") && !str.Contains("-headerType")).ToArray();
+            string requestHeaderType = args.Where(str => str.Contains("-headerType")).FirstOrDefault();
+            Array.Sort(arguments);
+
+            while (i < arguments.Count())
+            {
+                int begin = GetIndex(baseurl, '{', 1);
+                int len = GetIndex(baseurl, '}', 1) - begin + 1;
+                var temp = baseurl.Substring(begin, len);
+                begin = GetIndex(arguments[i], '-', 1);
+                len = (GetIndex(arguments[i], '=', 1)) - begin + 1;
+                begin = len;
+                len = arguments[i].Length - begin;
+                var newsub = arguments[i].Substring(begin, len);
+                baseurl = baseurl.Replace(temp, newsub);
+                i++;
+            }
+            baseurl = baseurl.Substring(GetIndex(baseurl, '=', 1) + 1, baseurl.Length - (GetIndex(baseurl, '=', 1) + 1));
+           
+
+
+            method = method.Substring(GetIndex(method, '=', 1) + 1, method.Length - (GetIndex(method, '=', 1) + 1));
+
+            if (method.ToLower() == "get")
+                method = "GET";
+            if (method.ToLower() == "put")
+                method = "PUT";
+            if (method.ToLower() == "POST")
+                method = "POST";
+
+            Console.WriteLine($"It will make a {method} http request to " + baseurl + '\n' );
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(baseurl);
+            
+            request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36";
+            if (headerContent.Any())
+            {
+               
+                string[] headers = new string[headerContent.Count()];
+                headers = headerContent;
+                int index = 0;
+                while (index < headers.Length)
+                {
+                    headers[index]=  headers[index].Substring(GetIndex(headers[index], '=', 1) + 1, headers[index].Length - (GetIndex(headers[index], '=', 1) + 1));
+                    index++;
+                }
+                if (headers.Count() == 2 && string.IsNullOrEmpty(requestHeaderType))
+                    request.Headers.Add(headers[0], headers[1]);
+                else if (!string.IsNullOrEmpty(requestHeaderType))
+                {
+                    var headerType = requestHeaderType.Substring(GetIndex(requestHeaderType, '=', 1) + 1, requestHeaderType.Length - (GetIndex(requestHeaderType, '=', 1) + 1));
+                    if (headerType.ToLower()== "contenttype" || headerType.ToLower() == "content-type" || headerType.ToLower() == "content type")
+                        request.Headers.Add(HttpRequestHeader.ContentType, headers[0]);
+                    else if (headerType.ToLower() == "authorization")
+                        request.Headers.Add(HttpRequestHeader.Authorization, headers[0]);
+                    else if (headerType.ToLower() == "charset")
+                        request.Headers.Add(HttpRequestHeader.AcceptCharset, headers[0]);
+                }
+            }
+            request.Timeout = 10000;
+            request.Method = method;
+            String response = "";
+            var gistResponse = request.GetResponse().GetResponseStream();
+            using (StreamReader rd = new StreamReader(gistResponse))
+            {
+               response  = rd.ReadToEnd();
+               
+            }
+            Console.WriteLine(response);
+            Console.ReadKey();
+        }
 
         public static void Main(string[] args)
         {
@@ -1314,55 +1393,6 @@ namespace dl
 
         }
 
-        private static void GetResponse(string[] args)
-        {
-            string[] arguments = new string[args.Count()];
-
-            int i = 0;
-            string baseurl = args.Where(str => str.Contains("-baseurl")).FirstOrDefault();
-            arguments = args.Where(str => str.Contains("-arg") || str.Contains("-args")).ToArray();
-            string method = args.Where(str => str.Contains("-method")).FirstOrDefault();
-            Array.Sort(arguments);
-
-            while (i < arguments.Count())
-            {
-                int begin = GetIndex(baseurl, '{', 1);
-                int len = GetIndex(baseurl, '}', 1) - begin + 1;
-                var temp = baseurl.Substring(begin, len);
-                begin = GetIndex(arguments[i], '-', 1);
-                len = (GetIndex(arguments[i], '=', 1)) - begin + 1;
-                begin = len;
-                len = arguments[i].Length - begin;
-                var newsub = arguments[i].Substring(begin, len);
-                baseurl = baseurl.Replace(temp, newsub);
-                i++;
-            }
-            baseurl = baseurl.Substring(GetIndex(baseurl, '=', 1) + 1, baseurl.Length - (GetIndex(baseurl, '=', 1) + 1));
-           
-
-
-            method = method.Substring(GetIndex(method, '=', 1) + 1, method.Length - (GetIndex(method, '=', 1) + 1));
-
-            if (method.ToLower() == "get")
-                method = "GET";
-            if (method.ToLower() == "put")
-                method = "PUT";
-            if (method.ToLower() == "POST")
-                method = "POST";
-
-            Console.WriteLine($"It will make a {method} http request to " + baseurl + '\n' );
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(baseurl);
-            request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36";
-            request.Timeout = 10000;
-            request.Method = method;
-            String response = "";
-            var Response = request.GetResponse().GetResponseStream();
-            using (StreamReader rd = new StreamReader(Response))
-            {
-               response  = rd.ReadToEnd();
-            }
-            Console.WriteLine(response);
-            Console.ReadKey();
-        }
+        
     }
 }
