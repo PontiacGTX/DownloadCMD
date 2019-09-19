@@ -1304,14 +1304,14 @@ namespace dl
             bool validation3 = implicitURL.Contains("ftp");
             bool validation4 = implicitURL.Contains("-baseurl");
 
-            if (firstExe && (validation1 || validation2 || validation3) && validation4)
+            if (firstExe && (validation1 || validation2 || validation3 || validation4))
             {
 
                 if (implicitURL != "")
                 {
                     try
                     {
-                        if (firstExe && (validation1 || validation2 || validation3) && !validation4)
+                        if (firstExe && (validation1 || validation2 || validation3 ) && !validation4)
                         {
 
                             if (validation1 || validation2 || validation3)
