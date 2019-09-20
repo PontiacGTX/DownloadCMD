@@ -1264,6 +1264,9 @@ namespace dl
                     headers[index]=  headers[index].Substring(GetIndex(headers[index], '=', 1) + 1, headers[index].Length - (GetIndex(headers[index], '=', 1) + 1));
                     index++;
                 }
+
+                if (headers.Count() == 1 && string.IsNullOrEmpty(requestHeaderType))
+                    request.Headers.Add(headers[0]);
                 if (headers.Count() == 2 && string.IsNullOrEmpty(requestHeaderType))
                     request.Headers.Add(headers[0], headers[1]);
                 else if (!string.IsNullOrEmpty(requestHeaderType))
