@@ -7,17 +7,14 @@ it can be placed in %userprofile% and executed from CMD writing dl(.exe File nam
 build instructions:
 requires references for 
 
-System.IO.Compression 
 
-System.IO.Compression.FileSystem
-
-System.Net.Http
-
-System.Net.Http.Formatting
-
-System.Xml
-
-System.Xml.Linq
-
-Newtonsoft.Json
-
+System.Threading.Tasks;
+System.Net;
+System.Diagnostics;
+System.IO;
+System.Threading;
+System.Net.Http.Formatting;
+System.Net.Http;
+Newtonsoft.Json;
+System.IO.Compression;
+System.Text.RegularExpressions;
