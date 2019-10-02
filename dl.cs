@@ -149,10 +149,6 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension != "") ? true : false;
-            //"." + url.Substring(extPos, url.Length - extPos).ToString();
-            //string inList = null;
-            //inList = extensionList.SingleOrDefault(s => s.Equals(foundExtension));
-            //bool MatchesExtension = inList!=null;
 
             if (ExtensioninURL)
             {
@@ -440,12 +436,6 @@ namespace dl
                 StreamReader rd = new StreamReader(responseObject);
                 var jsonString = rd.ReadToEnd();
 
-                //HttpClient client = new HttpClient();
-                //client.BaseAddress = new Uri(githubAPIURL); 
-                //client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36");
-                //HttpResponseMessage response = client.GetAsync(githubAPI).GetAwaiter().GetResult();
-                //client.PostAsJsonAsync(githubAPI, results).Result;
-                //response.EnsureSuccessStatusCode();
                     
                 var compressedFiles = JsonConvert.DeserializeObject<IList<GitHubRootobject>>(jsonString); //response.Content.ReadAsAsync<IList<GitHubRootobject>>().GetAwaiter().GetResult();
                 
@@ -529,6 +519,22 @@ namespace dl
             }
             
             WebException = false;
+        }
+        
+        private Data1 GetRResponseObject(List<RRootobject> foundElements)
+        {
+            for (int item = 0; item < foundElements.Count(); item++)
+            {
+                if (foundElements[item].data.children != null)
+                {
+                    foreach (Child element in foundElements[item].data.children)
+                    {
+                        if (element.data != null)
+                            return element.data;
+                    }
+                }
+            }
+            return null;
         }
 
         public void DownloadFile()
@@ -778,7 +784,8 @@ namespace dl
                 var dataObjectvideoURL = new Reddit_Video();
                 var dataObject = new Data1();
                 string title = "";
-
+                
+                dataObject = GetRResponseObject(foundElements);
                 dataObjectvideoURL.fallback_url = String.Empty;
                 if (dataObject.is_video)
                 {
