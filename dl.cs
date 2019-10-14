@@ -18,6 +18,7 @@ namespace dl
 {
     partial class Program
     {
+        static Program Download;
 
         WebClient client = new WebClient();
         public int count = 0;
@@ -149,6 +150,10 @@ namespace dl
             string foundExtension = "";
             foundExtension = Path.GetExtension(url);
             bool ExtensioninURL = (foundExtension != "") ? true : false;
+            //"." + url.Substring(extPos, url.Length - extPos).ToString();
+            //string inList = null;
+            //inList = extensionList.SingleOrDefault(s => s.Equals(foundExtension));
+            //bool MatchesExtension = inList!=null;
 
             if (ExtensioninURL)
             {
@@ -436,6 +441,12 @@ namespace dl
                 StreamReader rd = new StreamReader(responseObject);
                 var jsonString = rd.ReadToEnd();
 
+                //HttpClient client = new HttpClient();
+                //client.BaseAddress = new Uri(githubAPIURL); 
+                //client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36");
+                //HttpResponseMessage response = client.GetAsync(githubAPI).GetAwaiter().GetResult();
+                //client.PostAsJsonAsync(githubAPI, results).Result;
+                //response.EnsureSuccessStatusCode();
                     
                 var compressedFiles = JsonConvert.DeserializeObject<IList<GitHubRootobject>>(jsonString); //response.Content.ReadAsAsync<IList<GitHubRootobject>>().GetAwaiter().GetResult();
                 
@@ -519,22 +530,6 @@ namespace dl
             }
             
             WebException = false;
-        }
-        
-        private Data1 GetRResponseObject(List<RRootobject> foundElements)
-        {
-            for (int item = 0; item < foundElements.Count(); item++)
-            {
-                if (foundElements[item].data.children != null)
-                {
-                    foreach (Child element in foundElements[item].data.children)
-                    {
-                        if (element.data != null)
-                            return element.data;
-                    }
-                }
-            }
-            return null;
         }
 
         public void DownloadFile()
@@ -784,7 +779,7 @@ namespace dl
                 var dataObjectvideoURL = new Reddit_Video();
                 var dataObject = new Data1();
                 string title = "";
-                
+
                 dataObject = GetRResponseObject(foundElements);
                 dataObjectvideoURL.fallback_url = String.Empty;
                 if (dataObject.is_video)
@@ -1013,10 +1008,19 @@ namespace dl
                 end = GetIndex(url, '/', start + 1) > -1 ? GetIndex(url, '/', start + 1) : url.Length;
 
                 var imgID = url.Substring(start, end - start);
-                var imgurAPI = "https://api.imgur.com/3/gallery/id/";
+                bool galleryItems = false;
+                var imgurAPI = "";
+                if (url.Contains("gallery"))
+                {
+                    imgurAPI = "https://api.imgur.com/3/gallery/id/";
+                    galleryItems = true;
+                }
+                else if (!url.Contains("gallery"))
+                    imgurAPI = "https://api.imgur.com/3/image/id/";  
                 StringBuilder addtourl = new StringBuilder(imgurAPI);
                 url = addtourl.Replace("/id/", imgID).ToString();
 
+                
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                 request.Headers.Add("Authorization", "Client-ID eefdff21d10f81b");
@@ -1028,82 +1032,93 @@ namespace dl
 
                 rd.Close();
                 rd.Dispose();
-                var imgurResult = JsonConvert.DeserializeObject<ImgrRootobject>(responseStr);
-                List<string> imgurResultImages = new List<string>();
-                var ValidLink = false;
 
-                for (int j = 0; j < imgurResult.data.images.Count(); j++)
+                ImgrRootobject imgurResult;
+                SingleImageImgur singleResult;
+                List<string> selectedItem = new List<string>();
+                if (galleryItems)
                 {
-                    if (imgurResult.data.images[j] != null)
-                    {
-                        ValidLink = true;
-                        break;
-                    }
-                }
+                    imgurResult = JsonConvert.DeserializeObject<ImgrRootobject>(responseStr);
+                    List<string> imgurResultImages = new List<string>();
+                    var ValidLink = false;
 
-                Console.WriteLine("Found Images");
-                if (imgurResult.data.is_album)
-                {
-                    Console.WriteLine("Select items"); int i = 0;
-                    foreach (ImgrImage image in imgurResult.data.images)
-                    {
-                        if (!string.IsNullOrEmpty(image.link))
-                        {
-                            Console.WriteLine($"{i + 1} {image.link}"); i++;
-                            imgurResultImages.Add(image.link);
-                        }
-                    }
-                }
-                else if (ValidLink)
-                {
-                    Console.WriteLine("Select items"); int i = 0;
-                    for (long j = 0; j < imgurResult.data.images.Count(); j++)
+                    for (int j = 0; j < imgurResult.data.images.Count(); j++)
                     {
                         if (imgurResult.data.images[j] != null)
                         {
-                            imgurResultImages.Add(imgurResult.data.images[j].link);
-                            Console.WriteLine($"{i} {imgurResultImages[i]}"); ++i;
+                            ValidLink = true;
+                            break;
                         }
                     }
 
-                }
-
-                int countSelection = -1;
-
-                if (imgurResultImages.Count > 1)
-                {
-                    Console.WriteLine("How Many Images do you wish to download? if you want to download the full Album Enter 0");
-                    countSelection = int.Parse(Console.ReadLine());
-                }
-                else if (imgurResultImages.Count == 1)
-                {
-                    countSelection = 0;
-                }
-                List<int> selection = new List<int>();
-                List<string> selectedItem = new List<string>();
-
-                if (countSelection != 0)
-                {
-                    Console.WriteLine("Enter the images index you want to download, to finish selection enter -1");
-                    while (!selection.Any().Equals(-1) && selection.Count <= imgurResultImages.Count)
+                    Console.WriteLine("Found Images");
+                    if (imgurResult.data.is_album)
                     {
-                        Console.WriteLine("Enter number index to select");
-                        int choice = int.Parse(Console.ReadLine());
-                        selection.Add(choice);
+                        Console.WriteLine("Select items"); int i = 0;
+                        foreach (ImgrImage image in imgurResult.data.images)
+                        {
+                            if (!string.IsNullOrEmpty(image.link))
+                            {
+                                Console.WriteLine($"{i + 1} {image.link}"); i++;
+                                imgurResultImages.Add(image.link);
+                            }
+                        }
                     }
-                    for (int i = 0; i < selection.Count; i++)
+                    else if (ValidLink)
                     {
-                        selectedItem.Add(imgurResultImages[selection[i]]);
+                        Console.WriteLine("Select items"); int i = 0;
+                        for (long j = 0; j < imgurResult.data.images.Count(); j++)
+                        {
+                            if (imgurResult.data.images[j] != null)
+                            {
+                                imgurResultImages.Add(imgurResult.data.images[j].link);
+                                Console.WriteLine($"{i} {imgurResultImages[i]}"); ++i;
+                            }
+                        }
+
                     }
+
+                    int countSelection = -1;
+
+                    if (imgurResultImages.Count > 1)
+                    {
+                        Console.WriteLine("How Many Images do you wish to download? if you want to download the full Album Enter 0");
+                        countSelection = int.Parse(Console.ReadLine());
+                    }
+                    else if (imgurResultImages.Count == 1)
+                    {
+                        countSelection = 0;
+                    }
+                    List<int> selection = new List<int>();
+
+
+                    if (countSelection != 0)
+                    {
+                        Console.WriteLine("Enter the images index you want to download, to finish selection enter -1");
+                        while (!selection.Any().Equals(-1) && selection.Count <= imgurResultImages.Count)
+                        {
+                            Console.WriteLine("Enter number index to select");
+                            int choice = int.Parse(Console.ReadLine());
+                            selection.Add(choice);
+                        }
+                        for (int i = 0; i < selection.Count; i++)
+                        {
+                            selectedItem.Add(imgurResultImages[selection[i]]);
+                        }
+                    }
+                    else if (countSelection == 0)
+                    {
+                        selectedItem = imgurResultImages;
+                    }
+
+                    if (selection.Any(x => x == -1))
+                        selection.RemoveAt(selection.FindIndex(element => element == -1));
                 }
-                else if (countSelection == 0)
+                else
                 {
-                    selectedItem = imgurResultImages;
+                    singleResult = JsonConvert.DeserializeObject<SingleImageImgur>(responseStr);
+                    selectedItem.Add(singleResult.data.link);
                 }
-
-                if (selection.Any(x => x == -1))
-                    selection.RemoveAt(selection.FindIndex(element => element == -1));
-
                 using (WebClient imgurdownloadclient = new WebClient())
                 {
 
@@ -1122,7 +1137,11 @@ namespace dl
                 imgurContentDownloaded = true;
                 selectedItem.Clear();
                 selectedItem.Clear();
-                imgurResult = null;
+                if (galleryItems)
+                    imgurResult = null;
+                else
+                    singleResult = null;
+
                 responseStr = "";
             }
             else
@@ -1214,95 +1233,32 @@ namespace dl
 
             newFile = "";
             WebException = false;
+            FlashWindow(Process.GetCurrentProcess().MainWindowHandle);
             Console.WriteLine("Do you want to download another file?");
 
         }
-        
-        private static void GetResponse(string[] args)
+
+        private Data1 GetRResponseObject(List<RRootobject> foundElements)
         {
-            string[] arguments = new string[args.Count()];
-
-            int i = 0;
-            string baseurl = args.Where(str => str.Contains("-baseurl")).FirstOrDefault();
-            arguments = args.Where(str => str.Contains("-arg") || str.Contains("-args")).ToArray();
-            string method = args.Where(str => str.Contains("-method")).FirstOrDefault();
-            string[] headerContent = args.Where(str => str.Contains("-header") && !str.Contains("-headerType")).ToArray();
-            string requestHeaderType = args.Where(str => str.Contains("-headerType")).FirstOrDefault();
-            Array.Sort(arguments);
-
-            while (i < arguments.Count())
+            for (int item = 0; item < foundElements.Count(); item++)
             {
-                int begin = GetIndex(baseurl, '{', 1);
-                int len = GetIndex(baseurl, '}', 1) - begin + 1;
-                var temp = baseurl.Substring(begin, len);
-                begin = GetIndex(arguments[i], '-', 1);
-                len = (GetIndex(arguments[i], '=', 1)) - begin + 1;
-                begin = len;
-                len = arguments[i].Length - begin;
-                var newsub = arguments[i].Substring(begin, len);
-                baseurl = baseurl.Replace(temp, newsub);
-                i++;
-            }
-            baseurl = baseurl.Substring(GetIndex(baseurl, '=', 1) + 1, baseurl.Length - (GetIndex(baseurl, '=', 1) + 1));
-           
-
-
-            method = method.Substring(GetIndex(method, '=', 1) + 1, method.Length - (GetIndex(method, '=', 1) + 1));
-
-            if (method.ToLower() == "get")
-                method = "GET";
-            if (method.ToLower() == "put")
-                method = "PUT";
-            if (method.ToLower() == "POST")
-                method = "POST";
-
-            Console.WriteLine($"It will make a {method} http request to " + baseurl + '\n' );
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(baseurl);
-            
-            request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36";
-            if (headerContent.Any())
-            {
-               
-                string[] headers = new string[headerContent.Count()];
-                headers = headerContent;
-                int index = 0;
-                while (index < headers.Length)
+                if (foundElements[item].data.children != null)
                 {
-                    headers[index]=  headers[index].Substring(GetIndex(headers[index], '=', 1) + 1, headers[index].Length - (GetIndex(headers[index], '=', 1) + 1));
-                    index++;
-                }
-
-                if (headers.Count() == 1 && string.IsNullOrEmpty(requestHeaderType))
-                    request.Headers.Add(headers[0]);
-                if (headers.Count() == 2 && string.IsNullOrEmpty(requestHeaderType))
-                    request.Headers.Add(headers[0], headers[1]);
-                else if (!string.IsNullOrEmpty(requestHeaderType))
-                {
-                    var headerType = requestHeaderType.Substring(GetIndex(requestHeaderType, '=', 1) + 1, requestHeaderType.Length - (GetIndex(requestHeaderType, '=', 1) + 1));
-                    if (headerType.ToLower()== "contenttype" || headerType.ToLower() == "content-type" || headerType.ToLower() == "content type")
-                        request.Headers.Add(HttpRequestHeader.ContentType, headers[0]);
-                    else if (headerType.ToLower() == "authorization")
-                        request.Headers.Add(HttpRequestHeader.Authorization, headers[0]);
-                    else if (headerType.ToLower() == "charset")
-                        request.Headers.Add(HttpRequestHeader.AcceptCharset, headers[0]);
+                    foreach (Child element in foundElements[item].data.children)
+                    {
+                        if (element.data != null)
+                            return element.data;
+                    }
                 }
             }
-            request.Timeout = 10000;
-            request.Method = method;
-            String response = "";
-            var gistResponse = request.GetResponse().GetResponseStream();
-            using (StreamReader rd = new StreamReader(gistResponse))
-            {
-               response  = rd.ReadToEnd();
-               
-            }
-            Console.WriteLine(response);
-            Console.ReadKey();
+            return null;
         }
 
         public static void Main(string[] args)
         {
-            Program Download = new Program();
+            if(Download==null)
+               Download = new Program();
+
             Console.WriteLine($"Welcome {Environment.UserName}");
             string cont = "";
 
@@ -1403,6 +1359,98 @@ namespace dl
 
         }
 
-        
+        private static void GetResponse(string[] args)
+        {
+            try
+            {
+                string[] arguments = new string[args.Count()];
+
+                int i = 0;
+                string baseurl = args.Where(str => str.Contains("-baseurl")).FirstOrDefault();
+                arguments = args.Where(str => str.Contains("-arg") || str.Contains("-args")).ToArray();
+                string method = args.Where(str => str.Contains("-method")).FirstOrDefault();
+                string[] headerContent = args.Where(str => str.Contains("-header") && !str.Contains("-headerType")).ToArray();
+                string requestHeaderType = args.Where(str => str.Contains("-headerType")).FirstOrDefault();
+
+                Array.Sort(arguments);
+
+                while (i < arguments.Count())
+                {
+                    int begin = GetIndex(baseurl, '{', 1);
+                    int len = GetIndex(baseurl, '}', 1) - begin + 1;
+                    var temp = baseurl.Substring(begin, len);
+                    begin = GetIndex(arguments[i], '-', 1);
+                    len = (GetIndex(arguments[i], '=', 1)) - begin + 1;
+                    begin = len;
+                    len = arguments[i].Length - begin;
+                    var newsub = arguments[i].Substring(begin, len);
+                    baseurl = baseurl.Replace(temp, newsub);
+                    i++;
+                }
+                baseurl = baseurl.Substring(GetIndex(baseurl, '=', 1) + 1, baseurl.Length - (GetIndex(baseurl, '=', 1) + 1));
+
+
+
+                method = method.Substring(GetIndex(method, '=', 1) + 1, method.Length - (GetIndex(method, '=', 1) + 1));
+
+                if (method.ToLower() == "get")
+                    method = "GET";
+                if (method.ToLower() == "put")
+                    method = "PUT";
+                if (method.ToLower() == "post")
+                    method = "POST";
+
+                Console.WriteLine($"It will make a {method} http request to " + baseurl + '\n');
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(baseurl);
+
+                request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36";
+                if (headerContent.Any())
+                {
+
+                    string[] headers = new string[headerContent.Count()];
+                    headers = headerContent;
+                    int index = 0;
+                    while (index < headers.Length)
+                    {
+                        headers[index] = headers[index].Substring(GetIndex(headers[index], '=', 1) + 1, headers[index].Length - (GetIndex(headers[index], '=', 1) + 1));
+                        index++;
+                    }
+
+                    if (headers.Count() == 1 && string.IsNullOrEmpty(requestHeaderType))
+                    {
+                        var header = headers.Where(x => !string.IsNullOrEmpty(x)).FirstOrDefault();
+                        request.Headers.Add(header);
+                    }
+                    if (headers.Count() == 2 && string.IsNullOrEmpty(requestHeaderType))
+                        request.Headers.Add(headers[0], headers[1]);
+                    else if (!string.IsNullOrEmpty(requestHeaderType))
+                    {
+                        var headerType = requestHeaderType.Substring(GetIndex(requestHeaderType, '=', 1) + 1, requestHeaderType.Length - (GetIndex(requestHeaderType, '=', 1) + 1));
+                        if (headerType.ToLower() == "contenttype" || headerType.ToLower() == "content-type" || headerType.ToLower() == "content type")
+                            request.Headers.Add(HttpRequestHeader.ContentType, headers[0]);
+                        else if (headerType.ToLower() == "authorization")
+                            request.Headers.Add(HttpRequestHeader.Authorization, headers[0]);
+                        else if (headerType.ToLower() == "charset")
+                            request.Headers.Add(HttpRequestHeader.AcceptCharset, headers[0]);
+                    }
+                }
+                request.Timeout = 10000;
+                request.Method = method;
+                String response = "";
+                var gistResponse = request.GetResponse().GetResponseStream();
+                using (StreamReader rd = new StreamReader(gistResponse))
+                {
+                    response = rd.ReadToEnd();
+
+                }
+                Console.WriteLine(response);
+            }
+            catch (Exception ex)
+            {
+                Console.Write(ex.Message);
+
+            }
+            Console.ReadKey();
+        }
     }
 }
