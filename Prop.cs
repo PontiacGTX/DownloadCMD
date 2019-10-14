@@ -3,6 +3,153 @@ namespace dl
 {
     partial class Program
     {
+        
+         public class SingleImageImgur
+        {
+            public SingleImgurData data { get; set; }
+            public bool success { get; set; }
+            public int status { get; set; }
+        }
+
+        public class SingleImgurData
+        {
+            public string id { get; set; }
+            public object title { get; set; }
+            public object description { get; set; }
+            public int datetime { get; set; }
+            public string type { get; set; }
+            public bool animated { get; set; }
+            public int width { get; set; }
+            public int height { get; set; }
+            public int size { get; set; }
+            public int views { get; set; }
+            public int bandwidth { get; set; }
+            public object vote { get; set; }
+            public bool favorite { get; set; }
+            public bool nsfw { get; set; }
+            public object section { get; set; }
+            public object account_url { get; set; }
+            public object account_id { get; set; }
+            public bool is_ad { get; set; }
+            public bool in_most_viral { get; set; }
+            public bool has_sound { get; set; }
+            public object[] tags { get; set; }
+            public int ad_type { get; set; }
+            public string ad_url { get; set; }
+            public string edited { get; set; }
+            public bool in_gallery { get; set; }
+            public string link { get; set; }
+            public Ad_Config ad_config { get; set; }
+        }
+
+        public class Ad_Config
+        {
+            public string[] safeFlags { get; set; }
+            public string[] highRiskFlags { get; set; }
+            public object[] unsafeFlags { get; set; }
+            public bool showsAds { get; set; }
+        }
+
+        public class GistRootobject
+        {
+            public string url { get; set; }
+            public string forks_url { get; set; }
+            public string commits_url { get; set; }
+            public string id { get; set; }
+            public string node_id { get; set; }
+            public string git_pull_url { get; set; }
+            public string git_push_url { get; set; }
+            public string html_url { get; set; }
+            public Files files { get; set; }
+            public bool _public { get; set; }
+            public DateTime created_at { get; set; }
+            public DateTime updated_at { get; set; }
+            public string description { get; set; }
+            public int comments { get; set; }
+            public object user { get; set; }
+            public string comments_url { get; set; }
+            public Owner owner { get; set; }
+            public object[] forks { get; set; }
+            public History[] history { get; set; }
+            public bool truncated { get; set; }
+        }
+
+        public class Files
+        {
+            public ProgramclcCpp programclccpp { get; set; }
+        }
+
+        public class ProgramclcCpp
+        {
+            public string filename { get; set; }
+            public string type { get; set; }
+            public string language { get; set; }
+            public string raw_url { get; set; }
+            public int size { get; set; }
+            public bool truncated { get; set; }
+            public string content { get; set; }
+        }
+
+        public class Owner
+        {
+            public string login { get; set; }
+            public int id { get; set; }
+            public string node_id { get; set; }
+            public string avatar_url { get; set; }
+            public string gravatar_id { get; set; }
+            public string url { get; set; }
+            public string html_url { get; set; }
+            public string followers_url { get; set; }
+            public string following_url { get; set; }
+            public string gists_url { get; set; }
+            public string starred_url { get; set; }
+            public string subscriptions_url { get; set; }
+            public string organizations_url { get; set; }
+            public string repos_url { get; set; }
+            public string events_url { get; set; }
+            public string received_events_url { get; set; }
+            public string type { get; set; }
+            public bool site_admin { get; set; }
+        }
+
+        public class History
+        {
+            public User user { get; set; }
+            public string version { get; set; }
+            public string committed_at { get; set; }
+            public Change_Status change_status { get; set; }
+            public string url { get; set; }
+        }
+
+        public class User
+        {
+            public string login { get; set; }
+            public int id { get; set; }
+            public string node_id { get; set; }
+            public string avatar_url { get; set; }
+            public string gravatar_id { get; set; }
+            public string url { get; set; }
+            public string html_url { get; set; }
+            public string followers_url { get; set; }
+            public string following_url { get; set; }
+            public string gists_url { get; set; }
+            public string starred_url { get; set; }
+            public string subscriptions_url { get; set; }
+            public string organizations_url { get; set; }
+            public string repos_url { get; set; }
+            public string events_url { get; set; }
+            public string received_events_url { get; set; }
+            public string type { get; set; }
+            public bool site_admin { get; set; }
+        }
+
+        public class Change_Status
+        {
+            public int total { get; set; }
+            public int additions { get; set; }
+            public int deletions { get; set; }
+        }
+        
         #region reddit
         public class RRootobject
         {
