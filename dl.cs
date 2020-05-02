@@ -441,12 +441,7 @@ namespace dl
                 StreamReader rd = new StreamReader(responseObject);
                 var jsonString = rd.ReadToEnd();
 
-                //HttpClient client = new HttpClient();
-                //client.BaseAddress = new Uri(githubAPIURL); 
-                //client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36");
-                //HttpResponseMessage response = client.GetAsync(githubAPI).GetAwaiter().GetResult();
-                //client.PostAsJsonAsync(githubAPI, results).Result;
-                //response.EnsureSuccessStatusCode();
+                
                     
                 var compressedFiles = JsonConvert.DeserializeObject<IList<GitHubRootobject>>(jsonString); //response.Content.ReadAsAsync<IList<GitHubRootobject>>().GetAwaiter().GetResult();
                 
@@ -897,6 +892,7 @@ namespace dl
                             using (var tempDownloadclient = new WebClient())
                             {
                                 string ffmpegURL = "https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20190227-85051fe-win64-static.zip";
+                                
                                 int ffmpegurlStarts = ffmpegURL.LastIndexOf('/') + 1;
                                 int ffmpegurlEnds = ffmpegURL.LastIndexOf('.');
                                 ffmpegfolder = ffmpegURL.Substring(ffmpegurlStarts, ffmpegurlEnds - ffmpegurlStarts).ToString();
@@ -925,7 +921,10 @@ namespace dl
                                 ZipFile.ExtractToDirectory(ffmpegfolder, dirExtract);
                             }
                             
-                            ffmpegfolder = dirExtract + "ffmpeg-20190227-85051fe-win64-static\\bin\\ffmpeg.exe";
+                            int begIdx = GetIndex(dirExtract, '\\', dirExtract.Count(c =>c =='\\') -1)+ 1;
+                            int endIdx = GetIndex(dirExtract, '\\', dirExtract.Count(c => c == '\\'));
+                            string dir = dirExtract.Substring(begIdx,  endIdx-begIdx);
+                            ffmpegfolder = dirExtract + $"{dir}\\bin\\ffmpeg.exe";
 
                            
 
